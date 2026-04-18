@@ -221,11 +221,15 @@
   .patient-hero {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: white;
-    padding: 20px;
-    margin: -20px -20px 20px;
+    padding: 30px 20px;
+    margin: -20px -20px 24px;
     border-radius: 0 0 28px 28px;
     position: relative;
     overflow: hidden;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   .patient-hero::after {
     content: '';
@@ -257,7 +261,9 @@
   .patient-hero-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 4px;
   }
   .hero-tag {
     background: rgba(255,255,255,0.15);
