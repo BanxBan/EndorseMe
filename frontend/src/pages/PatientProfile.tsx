@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../api';
+import { apiWithCache } from '../api';
 import AddPatientModal from '../components/AddPatientModal';
 
 export default function PatientProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [patient, setPatient] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
 
   const fetchPatient = async () => {
     try {
-      const res = await api.get('/patients');
+      setLoading(true);
+      const res = await apiWithCache.get('/patients');
       const p = res.data.find((p: any) => p.id === id);
       setPatient(p);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -23,7 +27,48 @@ export default function PatientProfile() {
     fetchPatient();
   }, [id]);
 
-  if (!patient) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="screen active">
+        <div className="topbar">
+          <button className="back-btn" onClick={() => navigate('/')}>←</button>
+          <div>
+            <div className="topbar-logo">Loading...</div>
+            <div className="topbar-subtitle">Fetching patient data</div>
+          </div>
+        </div>
+        <div className="content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⏳</div>
+            <div style={{ fontSize: '1.2rem', color: '#666', marginBottom: '10px' }}>Loading Patient Profile</div>
+            <div style={{ color: '#999', fontSize: '0.9rem' }}>Please wait a moment...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!patient) {
+    return (
+      <div className="screen active">
+        <div className="topbar">
+          <button className="back-btn" onClick={() => navigate('/')}>←</button>
+          <div>
+            <div className="topbar-logo">Patient Not Found</div>
+            <div className="topbar-subtitle">Please check the patient ID</div>
+          </div>
+        </div>
+        <div className="content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔍</div>
+            <div style={{ fontSize: '1.2rem', color: '#666', marginBottom: '10px' }}>Patient Not Found</div>
+            <div style={{ color: '#999', fontSize: '0.9rem' }}>The patient you're looking for doesn't exist</div>
+            <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => navigate('/')}>Back to Dashboard</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen active">

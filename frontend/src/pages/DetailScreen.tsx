@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { apiWithCache } from '../api';
 import api from '../api';
 import AddDetailModal from '../components/AddDetailModal';
 
@@ -18,19 +19,26 @@ export default function DetailScreen() {
   const navigate = useNavigate();
   const [patient, setPatient] = useState<any>(null);
   const [records, setRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any>(null);
 
   const fetchRecords = async () => {
     try {
-      const pRes = await api.get('/patients');
-      setPatient(pRes.data.find((p: any) => p.id === id));
+      setLoading(true);
+      const pRes = await apiWithCache.get('/patients');
+      const foundPatient = pRes.data.find((p: any) => p.id === id);
+      setPatient(foundPatient);
       
-      const meta = detailMeta[type as string];
-      const res = await api.get(`/records/${meta.key}_${id}`);
-      setRecords(res.data);
+      if (foundPatient && type) {
+        const meta = detailMeta[type as string];
+        const res = await apiWithCache.get(`/records/${meta.key}_${id}`);
+        setRecords(res.data);
+      }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,7 +52,49 @@ export default function DetailScreen() {
     fetchRecords();
   };
 
-  if (!patient || !type) return <div>Loading...</div>;
+  if (loading) {
+    const meta = detailMeta[type as string];
+    return (
+      <div className="screen active">
+        <div className="topbar">
+          <button className="back-btn" onClick={() => navigate(`/patient/${id}`)}>←</button>
+          <div>
+            <div className="topbar-logo">{meta?.title || 'Loading...'}</div>
+            <div className="topbar-subtitle">Fetching data...</div>
+          </div>
+        </div>
+        <div className="content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⏳</div>
+            <div style={{ fontSize: '1.2rem', color: '#666', marginBottom: '10px' }}>Loading {meta?.title?.split(' ')[0] || 'Data'}</div>
+            <div style={{ color: '#999', fontSize: '0.9rem' }}>Please wait a moment...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!patient || !type) {
+    return (
+      <div className="screen active">
+        <div className="topbar">
+          <button className="back-btn" onClick={() => navigate('/')}>←</button>
+          <div>
+            <div className="topbar-logo">Page Not Found</div>
+            <div className="topbar-subtitle">Invalid patient or module</div>
+          </div>
+        </div>
+        <div className="content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔍</div>
+            <div style={{ fontSize: '1.2rem', color: '#666', marginBottom: '10px' }}>Page Not Found</div>
+            <div style={{ color: '#999', fontSize: '0.9rem' }}>The patient or module you're looking for doesn't exist</div>
+            <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => navigate('/')}>Back to Dashboard</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const meta = detailMeta[type];
 
