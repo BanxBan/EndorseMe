@@ -1,25 +1,35 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
+import { apiWithCache, clearCache } from '../api';
 import AddPatientModal from '../components/AddPatientModal';
 
 export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
   const [filterMode, setFilterMode] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const fetchPatients = async () => {
     try {
-      const res = await api.get('/patients');
+      setLoading(true);
+      const res = await apiWithCache.get('/patients');
       setPatients(res.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchPatients();
+  }, []);
+
+  // Preload data when component mounts
+  useEffect(() => {
+    // Warm up the cache
+    apiWithCache.get('/patients').catch(() => {});
   }, []);
 
   const handleLogout = () => {
@@ -96,8 +106,16 @@ export default function Dashboard() {
           <button className={`shift-btn ${filterMode === 'CRITICAL' ? 'active' : ''}`} onClick={() => setFilterMode('CRITICAL')}>🔴 Critical</button>
         </div>
 
-        <div className="patient-grid">
-          {filteredPatients.map(p => (
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '10px' }}>Loading...</div>
+              <div style={{ color: '#666' }}>Fetching patient data</div>
+            </div>
+          </div>
+        ) : (
+          <div className="patient-grid">
+            {filteredPatients.map(p => (
             <div key={p.id} className={`patient-card status-${p.status}`} onClick={() => navigate(`/patient/${p.id}`)} style={{ cursor: 'pointer' }}>
               <div className="patient-room">Rm {p.room} · {p.shift}</div>
               <div className="patient-name">{p.fname}<br/>{p.lname}</div>
@@ -107,8 +125,9 @@ export default function Dashboard() {
               </span>
             </div>
           ))}
-        </div>
-        {filteredPatients.length === 0 && (
+          </div>
+        )}
+        {!loading && filteredPatients.length === 0 && (
           <div className="no-results">
             No patients found. Add a patient to get started.
           </div>
@@ -119,6 +138,7 @@ export default function Dashboard() {
           onClose={() => setShowAddModal(false)} 
           onSave={() => {
             setShowAddModal(false);
+            clearCache('/patients');
             fetchPatients();
           }} 
         />
