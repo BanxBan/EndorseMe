@@ -1,0 +1,93 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "passwordHash": "$2b$10$9Yb.f8c9OZ2rSFNcyDgutOBWvyHycKwTQvUw0hz2qLgiiFiqQunKi"
+    }
+  ],
+  "patients": [
+    {
+      "id": "p1",
+      "room": "301-A",
+      "fname": "Maria",
+      "lname": "Santos",
+      "age": 68,
+      "sex": "Female",
+      "doctor": "Dr. Reyes",
+      "diag": "Community-acquired pneumonia",
+      "admit": "2026-04-14",
+      "status": "fair",
+      "allergy": "Penicillin",
+      "shift": "AM"
+    },
+    {
+      "id": "p2",
+      "room": "302-B",
+      "fname": "Jose",
+      "lname": "Garcia",
+      "age": 54,
+      "sex": "Male",
+      "doctor": "Dr. Cruz",
+      "diag": "Hypertensive urgency",
+      "admit": "2026-04-16",
+      "status": "stable",
+      "allergy": "NKDA",
+      "shift": "AM"
+    },
+    {
+      "id": "p3",
+      "room": "303-C",
+      "fname": "Lucia",
+      "lname": "Reyes",
+      "age": 79,
+      "sex": "Female",
+      "doctor": "Dr. Tan",
+      "diag": "Acute MI — post-cath care",
+      "admit": "2026-04-15",
+      "status": "critical",
+      "allergy": "ASA",
+      "shift": "PM"
+    },
+    {
+      "room": "245",
+      "shift": "AM",
+      "fname": "asdad",
+      "lname": "asdasd",
+      "age": "12",
+      "sex": "Male",
+      "doctor": "asdasd",
+      "diag": "asdasd",
+      "admit": "3212-12-12",
+      "status": "critical",
+      "allergy": "asdasdasd",
+      "id": "1776484023194"
+    }
+  ],
+  "records": {
+    "sbar_1776484023194": [
+      {
+        "ts": "2026-04-18T03:47",
+        "id": "1776484029590"
+      }
+    ],
+    "diet_1776484023194": [
+      {
+        "ts": "2026-04-18T03:47",
+        "value": "Cardiac diet (DASH)",
+        "notes": "asdasdasd",
+        "by": "asdasd",
+        "id": "1776484042420"
+      }
+    ],
+    "diet_p1": [
+      {
+        "ts": "2026-04-18T03:49",
+        "value": "Cardiac diet (DASH)",
+        "notes": "asdasd",
+        "by": "123123",
+        "id": "1776484172614"
+      }
+    ]
+  }
+}
