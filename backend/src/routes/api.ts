@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
-import { supabase } from '../db';
+import { authenticateToken } from '../middleware/auth.js';
+import { supabase } from '../db.js';
 
 const router = Router();
 router.use(authenticateToken); // Protect all routes below

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { supabase } from '../db';
+import { supabase } from '../db.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_for_dev';
