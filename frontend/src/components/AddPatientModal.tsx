@@ -18,6 +18,7 @@ const BEDS = ['1', '2', '3', '4', '5', '6'];
 
 export default function AddPatientModal({ patient, onClose, onSave }: { patient?: any, onClose: () => void, onSave: () => void }) {
   const isEditing = !!patient;
+  const today = new Date().toISOString().split('T')[0];
 
   // Determine initial room type based on existing patient data
   const getInitialRoomType = () => {
@@ -42,7 +43,7 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
     sex: patient?.sex || 'Male',
     doctor: patient?.doctor || '',
     diag: patient?.diag || '',
-    admit: patient?.admit || '',
+    admit: patient?.admit || today,
     status: patient?.status || 'stable',
     allergy: patient?.allergy || ''
   });
@@ -108,8 +109,36 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
       alert('Please select a Room Type');
       return;
     }
-    if (!formData.fname || !formData.lname) {
+    if (!formData.fname.trim() || !formData.lname.trim()) {
       alert('Please fill in First Name and Last Name');
+      return;
+    }
+    if (!String(formData.age).trim()) {
+      alert('Please fill in Age');
+      return;
+    }
+    if (Number(formData.age) <= 0) {
+      alert('Age must be greater than 0');
+      return;
+    }
+    if (!formData.doctor.trim()) {
+      alert('Please fill in Attending Physician');
+      return;
+    }
+    if (!formData.diag.trim()) {
+      alert('Please fill in Diagnosis / Chief Complaint');
+      return;
+    }
+    if (!formData.admit) {
+      alert('Please select an Admission Date');
+      return;
+    }
+    if (formData.admit > today) {
+      alert('Admission Date cannot be above today');
+      return;
+    }
+    if (!formData.allergy.trim()) {
+      alert('Please fill in Allergies (use NKDA if none)');
       return;
     }
 
@@ -264,7 +293,7 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
         </div>
         <div className="form-group">
           <label>Admission Date</label>
-          <input type="date" name="admit" value={formData.admit} onChange={handleChange} />
+          <input type="date" name="admit" value={formData.admit} onChange={handleChange} max={today} />
         </div>
         <div className="form-group">
           <label>Patient Status</label>
