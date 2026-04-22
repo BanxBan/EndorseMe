@@ -13,6 +13,18 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
 
+// Debug: catch-all to see what Express receives on Vercel
+app.use((req: Request, res: Response) => {
+  res.status(404).json({
+    error: 'Route not found',
+    method: req.method,
+    url: req.url,
+    originalUrl: req.originalUrl,
+    path: req.path,
+    baseUrl: req.baseUrl
+  });
+});
+
 
 
 if (process.env.NODE_ENV !== 'production') {
