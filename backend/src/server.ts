@@ -10,8 +10,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Standard mounts
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
+
+// Fallback mounts for Vercel (in case /api or /auth is stripped)
+app.use('/', authRoutes);
+app.use('/', apiRoutes);
+
+// Version check to verify deployment
+app.get('/api/version', (req, res) => {
+  res.json({ version: '1.1.0', status: 'ready' });
+});
 
 // Debug: catch-all to see what Express receives on Vercel
 app.use((req: Request, res: Response) => {
@@ -19,9 +29,8 @@ app.use((req: Request, res: Response) => {
     error: 'Route not found',
     method: req.method,
     url: req.url,
-    originalUrl: req.originalUrl,
     path: req.path,
-    baseUrl: req.baseUrl
+    msg: 'If you see this JSON, the latest backend code IS deployed.'
   });
 });
 
