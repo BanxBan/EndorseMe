@@ -117,7 +117,7 @@ export default function Dashboard() {
           <div className="patient-grid">
             {filteredPatients.map(p => (
             <div key={p.id} className={`patient-card status-${p.status}`} onClick={() => navigate(`/patient/${p.id}`)} style={{ cursor: 'pointer' }}>
-              <div className="patient-room">Rm {p.room} · {p.shift}</div>
+              <div className="patient-room">{p.ward_name ? `${p.ward_name} – Bed ${p.bed_number}` : `Rm ${p.room}`} · {p.shift}</div>
               <div className="patient-name">{p.fname}<br/>{p.lname}</div>
               <div className="patient-diag">{p.diag}</div>
               <span className={`patient-status-badge ${p.status === 'stable' ? 'badge-stable' : p.status === 'critical' ? 'badge-critical' : 'badge-fair'}`}>

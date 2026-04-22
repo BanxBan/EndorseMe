@@ -76,7 +76,7 @@ export default function PatientProfile() {
         <button className="back-btn" onClick={() => navigate('/')}>←</button>
         <div>
           <div className="topbar-logo" style={{fontSize: '1.2rem'}}>{patient.fname} {patient.lname}</div>
-          <div className="topbar-subtitle">Room {patient.room}</div>
+          <div className="topbar-subtitle">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : `Room ${patient.room}`}</div>
         </div>
         <div className="topbar-right">
           <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '20px' }} onClick={() => setShowEditModal(true)}>✏️ Edit</button>
@@ -84,7 +84,7 @@ export default function PatientProfile() {
       </div>
       <div className="content">
         <div className="patient-hero">
-          <div className="patient-hero-room">Room {patient.room} · {patient.shift} Shift · {patient.sex}, {patient.age}y/o</div>
+          <div className="patient-hero-room">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number} (${patient.ward_type})` : `Room ${patient.room}`} · {patient.shift} Shift · {patient.sex}, {patient.age}y/o</div>
           <div className="patient-hero-name">{patient.fname} {patient.lname}</div>
           <div className="patient-hero-info">
             {patient.diag} · Admitted {new Date(patient.admit).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' })}
