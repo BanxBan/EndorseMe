@@ -1,10 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import authRoutes from './routes/auth.js';
-import apiRoutes from './routes/api.js';
-
-dotenv.config();
+import authRoutes from './routes/auth';
+import apiRoutes from './routes/api';
 
 const app = express();
 app.use(cors());

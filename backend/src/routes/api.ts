@@ -1,9 +1,19 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth.js';
-import { supabase } from '../db.js';
+import { authenticateToken } from '../middleware/auth';
+import { supabase } from '../db';
 
 const router = Router();
 router.use(authenticateToken); // Protect all routes below
+
+const ROOMS = [
+  'RM 201', 'RM 202', 'RM 203', 'RM 204', 'RM 205',
+  'RM 206', 'RM 207', 'RM 208', 'RM 209', 'RM 210',
+  'RM 211', 'RM 212', 'RM 213', 'RM 214', 'RM 215'
+];
+
+router.get('/rooms', (req, res) => {
+  res.json(ROOMS);
+});
 
 router.get('/patients', async (req, res) => {
   const { data, error } = await supabase.from('patients').select('*');
