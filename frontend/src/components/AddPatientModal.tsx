@@ -1,5 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import api from '../api';
+
+const ROOMS = [
+  'RM 201', 'RM 202', 'RM 203', 'RM 204', 'RM 205',
+  'RM 206', 'RM 207', 'RM 208', 'RM 209', 'RM 210',
+  'RM 211', 'RM 212', 'RM 213', 'RM 214', 'RM 215'
+];
 
 export default function AddPatientModal({ patient, onClose, onSave }: { patient?: any, onClose: () => void, onSave: () => void }) {
   const [formData, setFormData] = useState({
@@ -15,20 +21,6 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
     status: patient?.status || 'stable',
     allergy: patient?.allergy || ''
   });
-
-  const [rooms, setRooms] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const response = await api.get('/rooms');
-        setRooms(response.data);
-      } catch (err) {
-        console.error('Failed to fetch rooms:', err);
-      }
-    };
-    fetchRooms();
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -64,7 +56,7 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
             <label>Room / Bed</label>
             <select name="room" value={formData.room} onChange={handleChange}>
               <option value="">Select Room / Bed</option>
-              {rooms.map(r => <option key={r} value={r}>{r}</option>)}
+              {ROOMS.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
           <div className="form-group">
