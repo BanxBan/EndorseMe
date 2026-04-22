@@ -10,8 +10,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/auth', authRoutes);
-app.use('/api', apiRoutes);
+app.use(['/auth', '/'], authRoutes);
+app.use(['/api', '/'], apiRoutes);
+
+// Debug route to help us see what's happening on Vercel
+app.get('/api-health', (req, res) => {
+  res.json({ status: 'ok', url: req.url, path: req.path });
+});
 
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
