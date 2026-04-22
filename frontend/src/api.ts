@@ -49,7 +49,7 @@ api.interceptors.response.use(
 
 // Enhanced GET method with caching
 const cachedGet = async (url: string, params?: any) => {
-  const cacheKey = `${url}${JSON.stringify(params)}`;
+  const cacheKey = params ? `${url}${JSON.stringify(params)}` : url;
   const cached = cache.get(cacheKey);
   
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
@@ -62,7 +62,12 @@ const cachedGet = async (url: string, params?: any) => {
 // Clear cache function
 export const clearCache = (url?: string) => {
   if (url) {
-    cache.delete(url);
+    // Clear all cache entries that start with the given url
+    for (const key of cache.keys()) {
+      if (key === url || key.startsWith(url)) {
+        cache.delete(key);
+      }
+    }
   } else {
     cache.clear();
   }
