@@ -3,7 +3,6 @@ import { authenticateToken } from '../middleware/auth';
 import { supabase } from '../db';
 
 const router = Router();
-router.use(authenticateToken); // Protect all routes below
 
 const ROOMS = [
   'RM 201', 'RM 202', 'RM 203', 'RM 204', 'RM 205',
@@ -14,6 +13,8 @@ const ROOMS = [
 router.get('/rooms', (req, res) => {
   res.json(ROOMS);
 });
+
+router.use(authenticateToken); // Protect all routes below
 
 router.get('/patients', async (req, res) => {
   const { data, error } = await supabase.from('patients').select('*');
