@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api';
+import { showToast } from '../utils/toast';
 
 const STANDARD_ROOMS = [
   'RM 201', 'RM 202', 'RM 203', 'RM 204', 'RM 205',
@@ -125,8 +126,10 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
 
       if (isEditing) {
         await api.put(`/patients/${patient.id}`, payload);
+        showToast('Patient updated successfully');
       } else {
         await api.post('/patients', payload);
+        showToast('Patient added successfully');
       }
       onSave();
     } catch (err) {

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiWithCache, clearCache } from '../api';
 import api from '../api';
 import AddPatientModal from '../components/AddPatientModal';
+import { showToast } from '../utils/toast';
 
 export default function PatientProfile() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ export default function PatientProfile() {
     try {
       await api.delete(`/patients/${id}`);
       clearCache();
+      showToast('Patient removed successfully');
       navigate('/');
     } catch (err) {
       console.error(err);

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api from '../api';
+import { showToast } from '../utils/toast';
 
 export default function AddDetailModal({ type, patientId, record, onClose, onSave }: { type: string, patientId: string, record?: any, onClose: () => void, onSave: () => void }) {
   const [formData, setFormData] = useState<any>(record || { ts: new Date().toISOString().slice(0, 16) });
@@ -12,8 +13,10 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
     try {
       if (record) {
         await api.put(`/records/${type}_${patientId}/${record.id}`, formData);
+        showToast('Record updated successfully');
       } else {
         await api.post(`/records/${type}_${patientId}`, formData);
+        showToast('Record added successfully');
       }
       onSave();
     } catch (err) {

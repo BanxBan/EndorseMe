@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiWithCache } from '../api';
 import api from '../api';
 import AddDetailModal from '../components/AddDetailModal';
+import { showToast } from '../utils/toast';
 
 const detailMeta: any = {
   diet: { title: 'Diet Orders 🍎', key: 'diet' },
@@ -49,6 +50,7 @@ export default function DetailScreen() {
   const handleDelete = async (recordId: string) => {
     const meta = detailMeta[type as string];
     await api.delete(`/records/${meta.key}_${id}/${recordId}`);
+    showToast('Record removed successfully');
     fetchRecords();
   };
 
