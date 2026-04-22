@@ -116,6 +116,22 @@ app.put('/api/patients/:id', authenticateToken, async (req, res) => {
   }
 });
 
+app.delete('/api/patients/:id', authenticateToken, async (req, res) => {
+  try {
+    await supabase.from('records').delete().like('key', `%${req.params.id}%`);
+    const { error } = await supabase.from('patients').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Invalidate cache
+    cache.delete('patients');
+
+    res.sendStatus(204);
+  } catch (error) {
+    console.error('Delete patient error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // Records routes (protected)
 app.get('/api/records/:key', authenticateToken, async (req, res) => {
   try {
