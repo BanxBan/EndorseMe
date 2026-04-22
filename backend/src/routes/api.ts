@@ -25,6 +25,14 @@ router.put('/patients/:id', async (req, res) => {
   res.json({ ...data[0].data, id: data[0].id });
 });
 
+router.delete('/patients/:id', async (req, res) => {
+  // Also delete related records for this patient
+  await supabase.from('records').delete().like('key', `%${req.params.id}%`);
+  const { error } = await supabase.from('patients').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.sendStatus(204);
+});
+
 router.get('/records/:key', async (req, res) => {
   const { data, error } = await supabase.from('records').select('*').eq('key', req.params.key);
   if (error) return res.status(500).json({ error: error.message });

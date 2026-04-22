@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiWithCache } from '../api';
+import { apiWithCache, clearCache } from '../api';
+import api from '../api';
 import AddPatientModal from '../components/AddPatientModal';
 
 export default function PatientProfile() {
@@ -9,6 +10,20 @@ export default function PatientProfile() {
   const [patient, setPatient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Are you sure you want to remove ${patient?.fname} ${patient?.lname}? This will also delete all their records.`)) {
+      return;
+    }
+    try {
+      await api.delete(`/patients/${id}`);
+      clearCache();
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete patient');
+    }
+  };
 
   const fetchPatient = async () => {
     try {
@@ -78,8 +93,9 @@ export default function PatientProfile() {
           <div className="topbar-logo" style={{fontSize: '1.2rem'}}>{patient.fname} {patient.lname}</div>
           <div className="topbar-subtitle">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : `Room ${patient.room}`}</div>
         </div>
-        <div className="topbar-right">
+        <div className="topbar-right" style={{ display: 'flex', gap: '6px' }}>
           <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '20px' }} onClick={() => setShowEditModal(true)}>✏️ Edit</button>
+          <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '20px', color: '#d32f2f' }} onClick={handleDelete}>🗑️ Remove</button>
         </div>
       </div>
       <div className="content">
