@@ -20,7 +20,7 @@ export default function PatientProfile() {
       await api.delete(`/patients/${id}`);
       clearCache();
       showToast('Patient removed successfully');
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       console.error(err);
       alert('Failed to delete patient');
@@ -48,7 +48,7 @@ export default function PatientProfile() {
     return (
       <div className="screen active">
         <div className="topbar">
-          <button className="back-btn" onClick={() => navigate('/')}>←</button>
+          <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
           <div>
             <div className="topbar-logo">Loading...</div>
             <div className="topbar-subtitle">Fetching patient data</div>
@@ -69,7 +69,7 @@ export default function PatientProfile() {
     return (
       <div className="screen active">
         <div className="topbar">
-          <button className="back-btn" onClick={() => navigate('/')}>←</button>
+          <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
           <div>
             <div className="topbar-logo">Patient Not Found</div>
             <div className="topbar-subtitle">Please check the patient ID</div>
@@ -80,7 +80,7 @@ export default function PatientProfile() {
             <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔍</div>
             <div style={{ fontSize: '1.2rem', color: '#666', marginBottom: '10px' }}>Patient Not Found</div>
             <div style={{ color: '#999', fontSize: '0.9rem' }}>The patient you're looking for doesn't exist</div>
-            <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => navigate('/')}>Back to Dashboard</button>
+            <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
           </div>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function PatientProfile() {
   return (
     <div className="screen active">
       <div className="topbar">
-        <button className="back-btn" onClick={() => navigate('/')}>←</button>
+        <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
         <div>
           <div className="topbar-logo" style={{fontSize: '1.2rem'}}>{patient.fname} {patient.lname}</div>
           <div className="topbar-subtitle">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : `Room ${patient.room}`}</div>
@@ -127,17 +127,21 @@ export default function PatientProfile() {
             <span className="icon-tile-emoji">💧</span>
             <div className="icon-tile-label">IV Fluids</div>
           </div>
-          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/vitals`)}>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/vs`)}>
             <span className="icon-tile-emoji">❤️</span>
-            <div className="icon-tile-label">Vital Signs</div>
+            <div className="icon-tile-label">VS</div>
+          </div>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/io`)}>
+            <span className="icon-tile-emoji">⚖️</span>
+            <div className="icon-tile-label">I & O</div>
           </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/meds`)}>
             <span className="icon-tile-emoji">💊</span>
             <div className="icon-tile-label">Medications</div>
           </div>
-          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/status`)}>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/so`)}>
             <span className="icon-tile-emoji">📝</span>
-            <div className="icon-tile-label">Status</div>
+            <div className="icon-tile-label">SO</div>
           </div>
         </div>
 

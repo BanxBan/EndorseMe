@@ -9,8 +9,11 @@ const detailMeta: any = {
   diet: { title: 'Diet Orders 🍎', key: 'diet' },
   labs: { title: 'Laboratory 🔬', key: 'labs' },
   ivfluids: { title: 'IV Fluids 💧', key: 'iv' },
+  vs: { title: 'Vital Signs ❤️', key: 'vitals' },
   vitals: { title: 'Vital Signs ❤️', key: 'vitals' },
+  io: { title: 'Intake & Output ⚖️', key: 'io' },
   meds: { title: 'Medications 💊', key: 'meds' },
+  so: { title: 'SO Notes 📝', key: 'so' },
   status: { title: 'Current Status 📝', key: 'status' },
   sbar: { title: 'SBAR Endorsement 📋', key: 'sbar' },
 };
@@ -54,6 +57,65 @@ export default function DetailScreen() {
     fetchRecords();
   };
 
+  const formatRecordValue = (record: any) => {
+    if (record.value) return record.value;
+    if (record.name) return record.name;
+    if (record.fluid) return `${record.fluid}${record.rate ? ` @ ${record.rate}` : ''}`;
+    if (record.bp) return `BP: ${record.bp}`;
+    if (record.intake || record.output) return `Intake: ${record.intake || 0} mL | Output: ${record.output || 0} mL`;
+    if (record.situation || record.background || record.assessment || record.recommendation) {
+      return `S: ${record.situation || '-'} | B: ${record.background || '-'} | A: ${record.assessment || '-'} | R: ${record.recommendation || '-'}`;
+    }
+    return 'Record entry';
+  };
+
+  const printPatientSbar = () => {
+    const printable = records
+      .map((r, idx) => (
+        `${idx + 1}. ${new Date(r.ts).toLocaleString()}\n` +
+        `By: ${r.by || 'N/A'}\n` +
+        `Situation: ${r.situation || '-'}\n` +
+        `Background: ${r.background || '-'}\n` +
+        `Assessment: ${r.assessment || '-'}\n` +
+        `Recommendation: ${r.recommendation || '-'}\n`
+      ))
+      .join('\n');
+
+    const content = `Patient SBAR Report\n\nPatient: ${patient.fname} ${patient.lname}\n\n${printable || 'No SBAR records yet.'}`;
+    const popup = window.open('', '_blank');
+    if (!popup) return;
+    popup.document.write(`<pre>${content}</pre>`);
+    popup.document.close();
+    popup.print();
+  };
+
+  const printAllPatientsSbar = async () => {
+    try {
+      const patientsRes = await apiWithCache.get('/patients');
+      const allPatients = patientsRes.data || [];
+      let report = 'SBAR Summary of All Patients\n\n';
+
+      for (const p of allPatients) {
+        const patientSbar = await apiWithCache.get(`/records/sbar_${p.id}`);
+        const latest = patientSbar.data?.[0];
+        report += `${p.fname} ${p.lname}\n`;
+        if (!latest) {
+          report += 'No SBAR records\n\n';
+          continue;
+        }
+        report += `S: ${latest.situation || '-'}\nB: ${latest.background || '-'}\nA: ${latest.assessment || '-'}\nR: ${latest.recommendation || '-'}\n\n`;
+      }
+
+      const popup = window.open('', '_blank');
+      if (!popup) return;
+      popup.document.write(`<pre>${report}</pre>`);
+      popup.document.close();
+      popup.print();
+    } catch (err) {
+      showToast('Failed to generate SBAR summary');
+    }
+  };
+
   if (loading) {
     const meta = detailMeta[type as string];
     return (
@@ -80,7 +142,7 @@ export default function DetailScreen() {
     return (
       <div className="screen active">
         <div className="topbar">
-          <button className="back-btn" onClick={() => navigate('/')}>←</button>
+          <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
           <div>
             <div className="topbar-logo">Page Not Found</div>
             <div className="topbar-subtitle">Invalid patient or module</div>
@@ -91,7 +153,7 @@ export default function DetailScreen() {
             <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔍</div>
             <div style={{ fontSize: '1.2rem', color: '#666', marginBottom: '10px' }}>Page Not Found</div>
             <div style={{ color: '#999', fontSize: '0.9rem' }}>The patient or module you're looking for doesn't exist</div>
-            <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => navigate('/')}>Back to Dashboard</button>
+            <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
           </div>
         </div>
       </div>
@@ -119,7 +181,7 @@ export default function DetailScreen() {
           <div className="history-list">
             {records.map(r => (
               <div key={r.id} className="history-item">
-                <div className="history-value">{r.value || r.name || r.fluid || `BP: ${r.bp}` || r.situation}</div>
+                <div className="history-value">{formatRecordValue(r)}</div>
                 <div className="history-time">{new Date(r.ts).toLocaleString()} · {r.by}</div>
                 <button className="edit-btn" onClick={() => {
                   setEditingRecord(r);
@@ -128,6 +190,12 @@ export default function DetailScreen() {
                 <button className="delete-btn" onClick={() => handleDelete(r.id)}>🗑</button>
               </div>
             ))}
+          </div>
+        )}
+        {type === 'sbar' && (
+          <div style={{ display: 'grid', gap: '10px', marginTop: '10px' }}>
+            <button className="btn btn-primary" onClick={printPatientSbar}>Print Patient SBAR</button>
+            <button className="btn btn-ghost" onClick={printAllPatientsSbar}>Print SBAR Summary of All Patients</button>
           </div>
         )}
       </div>

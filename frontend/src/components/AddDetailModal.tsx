@@ -76,6 +76,19 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
         </>
       );
     }
+    if (type === 'io') {
+      return (
+        <>
+          <div className="form-row">
+            <div className="form-group"><label>Intake (mL)</label><input type="number" name="intake" value={formData.intake || ''} onChange={handleChange} /></div>
+            <div className="form-group"><label>Output (mL)</label><input type="number" name="output" value={formData.output || ''} onChange={handleChange} /></div>
+          </div>
+          <div className="form-group"><label>Notes</label>
+            <textarea name="notes" value={formData.notes || ''} onChange={handleChange} rows={2}></textarea>
+          </div>
+        </>
+      );
+    }
     if (type === 'meds') {
       return (
         <>
@@ -88,6 +101,13 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
     if (type === 'status') {
       return (
         <div className="form-group"><label>Status Update</label>
+          <textarea name="value" value={formData.value || ''} onChange={handleChange} rows={5}></textarea>
+        </div>
+      );
+    }
+    if (type === 'so') {
+      return (
+        <div className="form-group"><label>Subjective / Objective Notes</label>
           <textarea name="value" value={formData.value || ''} onChange={handleChange} rows={5}></textarea>
         </div>
       );

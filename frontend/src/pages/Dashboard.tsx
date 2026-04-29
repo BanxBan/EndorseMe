@@ -35,7 +35,7 @@ export default function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    navigate('/login');
+    navigate('/auth');
   };
 
   const filteredPatients = patients.filter(p => {
@@ -53,6 +53,7 @@ export default function Dashboard() {
         </div>
         <div className="topbar-right">
           <span className="shift-badge">AM Shift</span>
+          <button className="back-btn" onClick={() => navigate('/profile')} title="Profile" style={{ marginLeft: '10px', fontSize: '0.9rem' }}>👤</button>
           <button className="back-btn" onClick={handleLogout} title="Logout" style={{ marginLeft: '10px', fontSize: '0.9rem' }}>🚪</button>
         </div>
       </div>
