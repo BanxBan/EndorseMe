@@ -163,7 +163,7 @@ export default function DetailScreen() {
     return (
       <div className="screen active">
         <div className="topbar">
-          <button className="back-btn" onClick={() => navigate(`/patient/${id}`)}>←</button>
+          <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
           <div>
             <div className="topbar-logo">{meta?.title || 'Loading...'}</div>
             <div className="topbar-subtitle">Fetching data...</div>
@@ -552,7 +552,7 @@ export default function DetailScreen() {
   return (
     <div className="screen active">
       <div className="topbar">
-        <button className="back-btn" onClick={() => navigate(`/patient/${id}`)}>←</button>
+        <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
         <div>
           <div className="topbar-logo">{meta.title}</div>
           <div className="topbar-subtitle">{patient.fname} {patient.lname} | Rm {patient.room}</div>
