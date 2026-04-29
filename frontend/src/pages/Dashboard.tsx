@@ -170,25 +170,21 @@ export default function Dashboard() {
             <div className="info-row"><span className="info-key">Urgent alerts</span><span className="info-val">{urgentAlerts}</span></div>
           </div>
 
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <div className="home-title" style={{ marginBottom: '10px' }}>Quick Actions</div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>Add Patient</button>
-              <button className="btn btn-accent" onClick={handleEndorsePatient}>Endorse Patient</button>
-              <button className="btn btn-ghost" onClick={scrollToPatientList}>View Patient List</button>
-            </div>
-          </div>
         </div>
 
         <div className="dashboard-main">
-        <div className="home-header" id="patient-list">
-          <div>
-            <div className="home-title">My Patients</div>
-            <div className="home-date">{new Date().toLocaleDateString('en-PH', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</div>
+        <div id="patient-list">
+          <div className="home-title">My Patients</div>
+          <div className="home-date">{new Date().toLocaleDateString('en-PH', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</div>
+        </div>
+
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+          <div className="home-title" style={{ marginBottom: '10px' }}>Quick Actions</div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>Add Patient</button>
+            <button className="btn btn-accent" onClick={handleEndorsePatient}>Endorse Patient</button>
+            <button className="btn btn-ghost" onClick={scrollToPatientList}>View Patient List</button>
           </div>
-          <button className="add-patient-btn" onClick={() => setShowAddModal(true)}>
-            ＋ Add Patient
-          </button>
         </div>
 
         <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
