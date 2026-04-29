@@ -6,11 +6,29 @@ import AddPatientModal from '../components/AddPatientModal';
 import { showToast } from '../utils/toast';
 
 export default function PatientProfile() {
+  const normalizeStatus = (status: string) => {
+    const normalized = String(status || '').toLowerCase().trim();
+    if (normalized === 'stable') return 'admitted';
+    if (normalized === 'fair') return 'for billing';
+    if (normalized === 'critical') return 'for discharge';
+    return normalized || 'admitted';
+  };
+
   const { id } = useParams();
   const navigate = useNavigate();
   const [patient, setPatient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  const patientCategory = String(patient?.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne';
+  const patientType = (() => {
+    const type = String(patient?.patientType || '').trim();
+    if (type === 'Post CS' || type === 'NSVD' || type === 'Gyne') return type;
+    return patientCategory === 'OB' ? 'NSVD' : 'Gyne';
+  })();
+  const patientTypeBadgeClass = patientType === 'Post CS' ? 'patient-type-post-cs' : patientType === 'NSVD' ? 'patient-type-nsvd' : 'patient-type-gyne';
+  const vitalsSchedule = patient?.vitalsSchedule || 'Q4';
+  const ioSchedule = patient?.ioSchedule || 'QShift';
+  const hasAllergy = patient?.allergy && String(patient.allergy).trim().toUpperCase() !== 'NKDA';
 
   const handleDelete = async () => {
     if (!window.confirm(`Are you sure you want to remove ${patient?.fname} ${patient?.lname}? This will also delete all their records.`)) {
@@ -108,9 +126,30 @@ export default function PatientProfile() {
             {patient.diag} · Admitted {new Date(patient.admit).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' })}
           </div>
           <div className="patient-hero-tags">
-            <span className="hero-tag accent">{patient.status.toUpperCase()}</span>
+            <span className="hero-tag accent">{normalizeStatus(patient.status).toUpperCase()}</span>
+            <span className={`patient-type-badge ${patientTypeBadgeClass}`}>{patientType}</span>
             <span className="hero-tag">{patient.doctor}</span>
-            <span className="hero-tag">Allergy: {patient.allergy || 'NKDA'}</span>
+            <span className="hero-tag" style={hasAllergy ? { background: '#FDDDE0', color: '#B71C1C', fontWeight: 700 } : undefined}>
+              Allergy: {patient.allergy || 'NKDA'} {hasAllergy ? '⚠️' : ''}
+            </span>
+          </div>
+        </div>
+
+        <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius)', padding: '16px', boxShadow: 'var(--shadow)', marginBottom: '16px' }}>
+          <div className="home-title" style={{ marginBottom: '10px' }}>Quick Summary</div>
+          <div className="info-row"><span className="info-key">Room Number</span><span className="info-val">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : patient.room}</span></div>
+          <div className="info-row"><span className="info-key">Patient Category</span><span className="info-val">{patientCategory}</span></div>
+          <div className="info-row"><span className="info-key">Patient Type</span><span className="info-val"><span className={`patient-type-badge ${patientTypeBadgeClass}`}>{patientType}</span></span></div>
+          <div className="info-row"><span className="info-key">Patient Status</span><span className="info-val">{normalizeStatus(patient.status)}</span></div>
+          <div className="info-row"><span className="info-key">Vital Signs Schedule</span><span className="info-val"><span className="schedule-badge">VS {vitalsSchedule}</span></span></div>
+          <div className="info-row"><span className="info-key">I&O Schedule</span><span className="info-val"><span className="schedule-badge">I&O {ioSchedule}</span></span></div>
+          <div className="info-row"><span className="info-key">Age & Sex</span><span className="info-val">{patient.age} / {patient.sex}</span></div>
+          <div className="info-row"><span className="info-key">Attending Physician</span><span className="info-val">{patient.doctor}</span></div>
+          <div className="info-row"><span className="info-key">Diagnosis</span><span className="info-val">{patient.diag}</span></div>
+          <div className="info-row"><span className="info-key">Admission Date</span><span className="info-val">{new Date(patient.admit).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' })}</span></div>
+          <div className="info-row" style={hasAllergy ? { background: '#FFF1F2', borderRadius: '8px', padding: '8px 10px', marginTop: '8px' } : undefined}>
+            <span className="info-key">Allergies ⚠️</span>
+            <span className="info-val" style={hasAllergy ? { color: '#B71C1C', fontWeight: 700 } : undefined}>{patient.allergy || 'NKDA'}</span>
           </div>
         </div>
 
@@ -130,10 +169,12 @@ export default function PatientProfile() {
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/vs`)}>
             <span className="icon-tile-emoji">❤️</span>
             <div className="icon-tile-label">VS</div>
+            <div className="icon-tile-current"><span className="schedule-badge">Due {vitalsSchedule}</span></div>
           </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/io`)}>
             <span className="icon-tile-emoji">⚖️</span>
             <div className="icon-tile-label">I & O</div>
+            <div className="icon-tile-current"><span className="schedule-badge">Due {ioSchedule}</span></div>
           </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/meds`)}>
             <span className="icon-tile-emoji">💊</span>
@@ -142,6 +183,18 @@ export default function PatientProfile() {
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/so`)}>
             <span className="icon-tile-emoji">📝</span>
             <div className="icon-tile-label">SO</div>
+          </div>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/attachments`)}>
+            <span className="icon-tile-emoji">DOC</span>
+            <div className="icon-tile-label">Attachments</div>
+          </div>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/alerts`)}>
+            <span className="icon-tile-emoji">!</span>
+            <div className="icon-tile-label">Alerts</div>
+          </div>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/orders`)}>
+            <span className="icon-tile-emoji">ORD</span>
+            <div className="icon-tile-label">Important Orders</div>
           </div>
         </div>
 

@@ -216,6 +216,35 @@
   .badge-stable { background: #D8F3E8; color: #2D7A55; }
   .badge-fair { background: #FEF0CC; color: #9A6C00; }
   .badge-critical { background: #FDDDE0; color: #B71C1C; }
+  .patient-type-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 12px;
+    padding: 3px 8px;
+    margin: 0 6px 8px 0;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .patient-type-post-cs { background: #EFE3FF; color: #6A1B9A; }
+  .patient-type-nsvd { background: #DDEEFF; color: #0D47A1; }
+  .patient-type-gyne { background: #DDF6E8; color: #1B5E20; }
+  .schedule-badge,
+  .due-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 12px;
+    padding: 3px 8px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .schedule-badge { background: #E3F2FD; color: #0D47A1; }
+  .due-badge { background: #FFF3CD; color: #8A5A00; }
 
   /* ─── PATIENT PROFILE SCREEN ─── */
   .patient-hero {
@@ -468,6 +497,86 @@
   .vital-label { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
   .vital-value { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--primary); }
 
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(11,79,108,0.07);
+    border-left: 3px solid var(--accent);
+    min-height: 88px;
+  }
+  .metric-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+  }
+  .metric-value {
+    font-family: 'Outfit', sans-serif;
+    color: var(--primary);
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
+  .metric-sub {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    margin-top: 2px;
+  }
+
+  .alert-card {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(11,79,108,0.07);
+    border-left: 4px solid var(--warning);
+  }
+  .alert-urgent { border-left-color: var(--danger); background: #FFF1F2; }
+  .alert-warning { border-left-color: var(--warning); background: #FFF8E8; }
+  .alert-routine { border-left-color: var(--success); background: #F0FBF6; }
+
+  .module-schedule-strip {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(11,79,108,0.07);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .order-card {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(11,79,108,0.07);
+    border-left: 3px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .order-priority { border-left-color: var(--danger); background: #FFF8F8; }
+  .order-type-badge,
+  .order-status-badge {
+    border-radius: 12px;
+    padding: 3px 8px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .order-blood { background: #FDDDE0; color: #B71C1C; }
+  .order-wound { background: #EFE3FF; color: #6A1B9A; }
+  .order-other { background: #E3F2FD; color: #0D47A1; }
+  .status-pending { background: #FFF3CD; color: #8A5A00; }
+  .status-ongoing { background: #CCF5F1; color: #00796B; }
+  .status-completed { background: #D8F3E8; color: #2D7A55; }
+
   /* ─── SBAR FORM ─── */
   .sbar-section {
     background: var(--surface);
@@ -498,6 +607,16 @@
     font-size: 0.72rem;
     color: var(--text-muted);
     margin-bottom: 10px;
+  }
+  .sbar-summary-grid {
+    display: grid;
+    gap: 10px;
+  }
+  .sbar-summary-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
   }
 
   /* ─── FORMS ─── */

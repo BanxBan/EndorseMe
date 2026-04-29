@@ -15,6 +15,9 @@ const WARDS = [
 ];
 
 const BEDS = ['1', '2', '3', '4', '5', '6'];
+const PATIENT_TYPES = ['Post CS', 'NSVD', 'Gyne'];
+const VITALS_SCHEDULES = ['Q4', 'Q6', 'Q8', 'QShift'];
+const IO_SCHEDULES = ['QShift', 'Q8', 'Q12', 'Q24'];
 
 export default function AddPatientModal({ patient, onClose, onSave }: { patient?: any, onClose: () => void, onSave: () => void }) {
   const isEditing = !!patient;
@@ -41,10 +44,14 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
     lname: patient?.lname || '',
     age: patient?.age || '',
     sex: patient?.sex || 'Male',
+    patientType: patient?.patientType || 'Gyne',
+    vitalsSchedule: patient?.vitalsSchedule || 'Q4',
+    ioSchedule: patient?.ioSchedule || 'QShift',
+    importantOrders: patient?.importantOrders || [],
     doctor: patient?.doctor || '',
     diag: patient?.diag || '',
     admit: patient?.admit || today,
-    status: patient?.status || 'stable',
+    status: patient?.status || 'admitted',
     allergy: patient?.allergy || ''
   });
 
@@ -282,6 +289,28 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
             </select>
           </div>
         </div>
+
+        <div className="form-group">
+          <label>Patient Type</label>
+          <select name="patientType" value={formData.patientType} onChange={handleChange}>
+            {PATIENT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+          </select>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Vital Signs Schedule</label>
+            <select name="vitalsSchedule" value={formData.vitalsSchedule} onChange={handleChange}>
+              {VITALS_SCHEDULES.map(schedule => <option key={schedule} value={schedule}>{schedule}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>I&O Schedule</label>
+            <select name="ioSchedule" value={formData.ioSchedule} onChange={handleChange}>
+              {IO_SCHEDULES.map(schedule => <option key={schedule} value={schedule}>{schedule}</option>)}
+            </select>
+          </div>
+        </div>
         
         <div className="form-group">
           <label>Attending Physician</label>
@@ -298,9 +327,9 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
         <div className="form-group">
           <label>Patient Status</label>
           <select name="status" value={formData.status} onChange={handleChange}>
-            <option value="stable">Stable</option>
-            <option value="fair">Fair</option>
-            <option value="critical">Critical</option>
+            <option value="admitted">Admitted</option>
+            <option value="for billing">For Billing</option>
+            <option value="for discharge">For Discharge</option>
           </select>
         </div>
         <div className="form-group">
