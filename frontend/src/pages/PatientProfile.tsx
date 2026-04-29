@@ -135,7 +135,8 @@ export default function PatientProfile() {
           </div>
         </div>
 
-        <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius)', padding: '16px', boxShadow: 'var(--shadow)', marginBottom: '16px' }}>
+        <div className="profile-layout">
+        <div className="panel-card">
           <div className="home-title" style={{ marginBottom: '10px' }}>Quick Summary</div>
           <div className="info-row"><span className="info-key">Room Number</span><span className="info-val">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : patient.room}</span></div>
           <div className="info-row"><span className="info-key">Patient Category</span><span className="info-val">{patientCategory}</span></div>
@@ -205,6 +206,7 @@ export default function PatientProfile() {
             <div className="endorse-sub">Situation · Background · Assessment · Recommendation</div>
           </div>
           <div style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>→</div>
+        </div>
         </div>
       </div>
 

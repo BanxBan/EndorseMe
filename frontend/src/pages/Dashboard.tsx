@@ -120,8 +120,8 @@ export default function Dashboard() {
           <button className="back-btn" onClick={handleLogout} title="Logout" style={{ marginLeft: '10px', fontSize: '0.9rem' }}>🚪</button>
         </div>
       </div>
-      <div className="content">
-        <div style={{ display: 'grid', gap: '15px', marginBottom: '20px' }}>
+      <div className="content dashboard-content">
+        <div className="dashboard-left" style={{ display: 'grid', gap: '15px', marginBottom: '20px' }}>
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
             <div className="home-title">Nurse Info</div>
             <div className="info-row"><span className="info-key">Name</span><span className="info-val">{nurseName}</span></div>
@@ -171,12 +171,6 @@ export default function Dashboard() {
           </div>
 
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <div className="home-title" style={{ marginBottom: '10px' }}>Task Summary</div>
-            <div className="info-row"><span className="info-key">Due medications</span><span className="info-val">{pendingMeds}</span></div>
-            <div className="info-row"><span className="info-key">Pending labs/procedures</span><span className="info-val">{pendingLabsOrProcedures}</span></div>
-          </div>
-
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
             <div className="home-title" style={{ marginBottom: '10px' }}>Quick Actions</div>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>Add Patient</button>
@@ -186,6 +180,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        <div className="dashboard-main">
         <div className="home-header" id="patient-list">
           <div>
             <div className="home-title">My Patients</div>
@@ -194,6 +189,12 @@ export default function Dashboard() {
           <button className="add-patient-btn" onClick={() => setShowAddModal(true)}>
             ＋ Add Patient
           </button>
+        </div>
+
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+          <div className="home-title" style={{ marginBottom: '10px' }}>Task Summary</div>
+          <div className="info-row"><span className="info-key">Due medications</span><span className="info-val">{pendingMeds}</span></div>
+          <div className="info-row"><span className="info-key">Pending labs/procedures</span><span className="info-val">{pendingLabsOrProcedures}</span></div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
@@ -260,6 +261,7 @@ export default function Dashboard() {
             No patients found. Add a patient to get started.
           </div>
         )}
+        </div>
       </div>
       {showAddModal && (
         <AddPatientModal 
