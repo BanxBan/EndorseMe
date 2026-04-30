@@ -163,7 +163,7 @@ export default function DetailScreen() {
     return (
       <div className="screen active">
         <div className="topbar">
-          <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
+          <button className="back-btn" onClick={() => navigate(`/patient/${id}`)}>←</button>
           <div>
             <div className="topbar-logo">{meta?.title || 'Loading...'}</div>
             <div className="topbar-subtitle">Fetching data...</div>
@@ -182,7 +182,7 @@ export default function DetailScreen() {
     return (
       <div className="screen active">
         <div className="topbar">
-          <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
+          <button className="back-btn" onClick={() => navigate(`/patient/${id}`)}>←</button>
           <div>
             <div className="topbar-logo">Page Not Found</div>
             <div className="topbar-subtitle">Invalid patient or module</div>
@@ -452,6 +452,39 @@ export default function DetailScreen() {
           <div className="history-time">{summary.by}{summary.ts ? ` | ${new Date(summary.ts).toLocaleString()}` : ''}</div>
         </div>
       </div>
+      {record && (record.recipient || record.priority) && (
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          marginBottom: '12px',
+          flexWrap: 'wrap'
+        }}>
+          {record.recipient && (
+            <span style={{ 
+              background: record.recipient === 'doctor' ? '#E3F2FD' : '#F3E5F5',
+              color: record.recipient === 'doctor' ? '#1565C0' : '#6A1B9A',
+              padding: '4px 10px',
+              borderRadius: '12px',
+              fontSize: '0.8rem',
+              fontWeight: 600
+            }}>
+              📤 To: {record.recipient === 'next_shift' ? 'Next Shift' : record.recipient === 'assigned_nurse' ? 'Assigned Nurse' : 'Doctor'}
+            </span>
+          )}
+          {record.priority && (
+            <span style={{ 
+              background: record.priority === 'urgent' ? '#FFEBEE' : '#E8F5E9',
+              color: record.priority === 'urgent' ? '#C62828' : '#2E7D32',
+              padding: '4px 10px',
+              borderRadius: '12px',
+              fontSize: '0.8rem',
+              fontWeight: 600
+            }}>
+              {record.priority === 'urgent' ? '🔴 Urgent' : '🟢 Routine'}
+            </span>
+          )}
+        </div>
+      )}
       <div className="sbar-summary-grid">
         <div className="sbar-summary-block"><div className="sbar-title">Situation</div><div className="history-time">{summary.situation}</div></div>
         <div className="sbar-summary-block"><div className="sbar-title">Background</div><div className="history-time">{summary.background}</div></div>
@@ -552,7 +585,7 @@ export default function DetailScreen() {
   return (
     <div className="screen active">
       <div className="topbar">
-        <button className="back-btn" onClick={() => navigate('/dashboard')}>←</button>
+        <button className="back-btn" onClick={() => navigate(`/patient/${id}`)}>←</button>
         <div>
           <div className="topbar-logo">{meta.title}</div>
           <div className="topbar-subtitle">{patient.fname} {patient.lname} | Rm {patient.room}</div>

@@ -167,7 +167,7 @@ export default function PatientProfile() {
             <span className="icon-tile-emoji">💧</span>
             <div className="icon-tile-label">IV Fluids</div>
           </div>
-          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/vs`)}>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/vitals`)}>
             <span className="icon-tile-emoji">❤️</span>
             <div className="icon-tile-label">VS</div>
             <div className="icon-tile-current"><span className="schedule-badge">Due {vitalsSchedule}</span></div>

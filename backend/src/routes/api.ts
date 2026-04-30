@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
 import { supabase } from '../db';
 
 const router = Router();
 
-router.use(authenticateToken); // Protect all routes below
+// Authentication removed for patient operations
 
 router.get('/patients', async (req, res) => {
   const { data, error } = await supabase.from('patients').select('*');

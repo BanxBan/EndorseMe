@@ -103,8 +103,8 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-// Patient routes (protected)
-app.get('/api/patients', authenticateToken, async (req, res) => {
+// Patient routes
+app.get('/api/patients', async (req, res) => {
   try {
     const cacheKey = 'patients';
     const cached = cache.get(cacheKey);
@@ -126,7 +126,7 @@ app.get('/api/patients', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/patients', authenticateToken, async (req, res) => {
+app.post('/api/patients', async (req, res) => {
   try {
     const newId = Date.now().toString();
     const { data, error } = await supabase.from('patients').insert([{ id: newId, data: req.body }]).select();
@@ -142,7 +142,7 @@ app.post('/api/patients', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/patients/:id', authenticateToken, async (req, res) => {
+app.put('/api/patients/:id', async (req, res) => {
   try {
     const { data, error } = await supabase.from('patients').update({ data: req.body }).eq('id', req.params.id).select();
     if (error) return res.status(500).json({ error: error.message });
@@ -157,7 +157,7 @@ app.put('/api/patients/:id', authenticateToken, async (req, res) => {
   }
 });
 
-app.delete('/api/patients/:id', authenticateToken, async (req, res) => {
+app.delete('/api/patients/:id', async (req, res) => {
   try {
     await supabase.from('records').delete().like('key', `%${req.params.id}%`);
     const { error } = await supabase.from('patients').delete().eq('id', req.params.id);

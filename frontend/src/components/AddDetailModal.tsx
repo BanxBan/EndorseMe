@@ -58,7 +58,7 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
         </>
       );
     }
-    if (type === 'ivfluids') {
+    if (type === 'ivfluids' || type === 'iv') {
       return (
         <>
           <div className="form-row">
@@ -194,6 +194,21 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
     if (type === 'sbar') {
       return (
         <>
+          <div className="form-row">
+            <div className="form-group"><label>Send To</label>
+              <select name="recipient" value={formData.recipient || 'next_shift'} onChange={handleChange}>
+                <option value="next_shift">Next Shift</option>
+                <option value="assigned_nurse">Assigned Nurse</option>
+                <option value="doctor">Doctor</option>
+              </select>
+            </div>
+            <div className="form-group"><label>Priority</label>
+              <select name="priority" value={formData.priority || 'routine'} onChange={handleChange}>
+                <option value="routine">Routine</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
           <div className="form-group"><label>Situation</label><textarea name="situation" value={formData.situation || ''} onChange={handleChange} rows={2}></textarea></div>
           <div className="form-group"><label>Background</label><textarea name="background" value={formData.background || ''} onChange={handleChange} rows={2}></textarea></div>
           <div className="form-group"><label>Assessment</label><textarea name="assessment" value={formData.assessment || ''} onChange={handleChange} rows={2}></textarea></div>
