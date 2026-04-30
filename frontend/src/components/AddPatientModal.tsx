@@ -178,95 +178,82 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
     <div className="modal-overlay open" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="modal" style={{ 
         transform: 'translateY(0)',
-        maxWidth: '600px',
+        maxWidth: '720px',
         maxHeight: '90vh',
-        overflowY: 'auto'
+        overflowY: 'auto',
+        padding: '30px'
       }}>
         <div className="modal-handle"></div>
-        <div className="modal-title" style={{ fontSize: '1.8rem', fontWeight: 800 }}>{isEditing ? '✏️ Edit Patient' : '➕ Add Patient'}</div>
-        <div className="modal-sub" style={{ fontSize: '1rem', color: '#666' }}>Fill in the patient's information below</div>
+        <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+          <div className="modal-title" style={{ fontSize: '1.5rem', fontWeight: 800 }}>{isEditing ? '✏️ Edit Patient' : '➕ Add Patient'}</div>
+          <div className="modal-sub" style={{ fontSize: '0.9rem', color: '#666', marginTop: '4px' }}>Please complete all required clinical information.</div>
+        </div>
         
         {/* Room Assignment Section */}
         <div style={{ 
-          background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)',
+          backgroundColor: '#f8fbff',
           borderRadius: '16px',
-          padding: '20px',
-          marginBottom: '24px',
-          border: '2px solid #2196F3',
-          boxShadow: '0 4px 12px rgba(33, 150, 243, 0.15)'
+          padding: '18px',
+          marginBottom: '20px',
+          border: '1px solid #d0e3ff'
         }}>
           <div style={{ 
-            fontSize: '1.2rem', 
+            fontSize: '1rem', 
             fontWeight: 800, 
             color: '#1565C0', 
-            marginBottom: '16px', 
+            marginBottom: '14px', 
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '8px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
           }}>
-            <span style={{ fontSize: '1.5rem' }}>🏥</span>
+            <span style={{ fontSize: '1.2rem' }}>🏥</span>
             Room Assignment
           </div>
-          <div className="form-group">
-            <label style={{ fontSize: '1rem', fontWeight: 600, color: '#1565C0' }}>📍 Room Type</label>
-            <select value={roomType} onChange={handleRoomTypeChange} style={{ 
-              fontSize: '1rem',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '2px solid #90CAF9'
-            }}>
-              <option value="">Select Room Type</option>
-              <option value="standard">Standard Room (RM 201–215)</option>
-              <option value="ob-gyne">OB-Gyne Ward (Ward #1–3)</option>
-            </select>
-          </div>
-
-          {/* Standard Room Selector */}
-          {roomType === 'standard' && (
+          
+          <div className="form-row">
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#1565C0' }}>🚪 Room Number</label>
-              <select name="room" value={formData.room} onChange={handleChange} style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #90CAF9'
-              }}>
-                <option value="">Select Room</option>
-                {STANDARD_ROOMS.map(r => {
-                  const occupied = occupiedRooms.includes(r);
-                  return (
-                    <option key={r} value={r} disabled={occupied}>
-                      {r}{occupied ? ' — Occupied' : ''}
-                    </option>
-                  );
-                })}
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1565C0' }}>📍 Room Type</label>
+              <select value={roomType} onChange={handleRoomTypeChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
+                <option value="">Select Room Type</option>
+                <option value="standard">Standard Room (RM 201–215)</option>
+                <option value="ob-gyne">OB-Gyne Ward (Ward #1–3)</option>
               </select>
             </div>
-          )}
+
+            {/* Standard Room Selector */}
+            {roomType === 'standard' && (
+              <div className="form-group">
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1565C0' }}>🚪 Room Number</label>
+                <select name="room" value={formData.room} onChange={handleChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
+                  <option value="">Select Room</option>
+                  {STANDARD_ROOMS.map(r => {
+                    const occupied = occupiedRooms.includes(r);
+                    return (
+                      <option key={r} value={r} disabled={occupied}>
+                        {r}{occupied ? ' — Occupied' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
+          </div>
 
           {/* OB-Gyne Ward Selectors */}
           {roomType === 'ob-gyne' && (
-            <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="form-row">
               <div className="form-group">
-                <label style={{ fontSize: '1rem', fontWeight: 600, color: '#1565C0' }}>🏥 Ward / Room</label>
-                <select name="ward_name" value={formData.ward_name} onChange={handleWardChange} style={{ 
-                  fontSize: '1rem',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '2px solid #90CAF9'
-                }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1565C0' }}>🏥 Ward / Room</label>
+                <select name="ward_name" value={formData.ward_name} onChange={handleWardChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
                   <option value="">Select Ward</option>
                   {WARDS.map(w => <option key={w.name} value={w.name}>{w.name} ({w.type})</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label style={{ fontSize: '1rem', fontWeight: 600, color: '#1565C0' }}>🛏️ Bed Number</label>
-                <select name="bed_number" value={formData.bed_number} onChange={handleChange} disabled={!formData.ward_name} style={{ 
-                  fontSize: '1rem',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '2px solid #90CAF9'
-                }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1565C0' }}>🛏️ Bed Number</label>
+                <select name="bed_number" value={formData.bed_number} onChange={handleChange} disabled={!formData.ward_name} style={{ fontSize: '0.9rem', padding: '10px' }}>
                   <option value="">Select Bed</option>
                   {formData.ward_name && BEDS.map(b => {
                     const occupied = isBedOccupied(formData.ward_name, b);
@@ -284,19 +271,19 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
           {/* Assignment Preview */}
           {((roomType === 'standard' && formData.room) || (roomType === 'ob-gyne' && formData.ward_name && formData.bed_number)) && (
             <div style={{ 
-              backgroundColor: '#1976D2',
-              color: 'white',
-              borderRadius: '12px', 
-              padding: '14px 16px', 
-              marginTop: '16px',
-              fontSize: '1.1rem',
+              backgroundColor: '#e3f2fd',
+              color: '#1565C0',
+              borderRadius: '8px', 
+              padding: '10px 12px', 
+              marginTop: '4px',
+              fontSize: '0.85rem',
               fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              boxShadow: '0 4px 8px rgba(25, 118, 210, 0.3)'
+              gap: '8px',
+              border: '1px dashed #2196F3'
             }}>
-              <span style={{ fontSize: '1.6rem' }}>✅</span>
+              <span style={{ fontSize: '1.2rem' }}>✅</span>
               {roomType === 'standard' 
                 ? `Assigned to: ${formData.room}` 
                 : `Assigned to: ${formData.ward_name} – Bed ${formData.bed_number} (${formData.ward_type})`}
@@ -306,99 +293,69 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
 
         {/* Patient Information Section */}
         <div style={{ 
-          background: 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)',
+          backgroundColor: '#f6fff7',
           borderRadius: '16px',
-          padding: '20px',
-          marginBottom: '24px',
-          border: '2px solid #4CAF50',
-          boxShadow: '0 4px 12px rgba(76, 175, 80, 0.15)'
+          padding: '18px',
+          marginBottom: '20px',
+          border: '1px solid #dcf5de'
         }}>
           <div style={{ 
-            fontSize: '1.2rem', 
+            fontSize: '1rem', 
             fontWeight: 800, 
             color: '#2E7D32', 
-            marginBottom: '16px',
+            marginBottom: '14px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '8px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
           }}>
-            <span style={{ fontSize: '1.5rem' }}>👤</span>
+            <span style={{ fontSize: '1.2rem' }}>👤</span>
             Patient Information
           </div>
-          <div className="form-row" style={{ gap: '12px' }}>
+          <div className="form-row">
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>👤 First Name</label>
-              <input type="text" name="fname" value={formData.fname} onChange={handleChange} placeholder="Juan" style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #A5D6A7'
-              }} />
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2E7D32' }}>First Name</label>
+              <input type="text" name="fname" value={formData.fname} onChange={handleChange} placeholder="Juan" style={{ fontSize: '0.9rem', padding: '10px' }} />
             </div>
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>👤 Last Name</label>
-              <input type="text" name="lname" value={formData.lname} onChange={handleChange} placeholder="Dela Cruz" style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #A5D6A7'
-              }} />
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2E7D32' }}>Last Name</label>
+              <input type="text" name="lname" value={formData.lname} onChange={handleChange} placeholder="Dela Cruz" style={{ fontSize: '0.9rem', padding: '10px' }} />
             </div>
           </div>
           
-          <div className="form-row" style={{ gap: '12px' }}>
+          <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>🎂 Age</label>
-              <input type="number" name="age" value={formData.age} onChange={handleChange} placeholder="45" style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #A5D6A7'
-              }} />
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2E7D32' }}>🎂 Age</label>
+              <input type="number" name="age" value={formData.age} onChange={handleChange} placeholder="45" style={{ fontSize: '0.9rem', padding: '10px' }} />
             </div>
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>⚧ Sex</label>
-              <select name="sex" value={formData.sex} onChange={handleChange} style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #A5D6A7'
-              }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2E7D32' }}>⚧ Sex</label>
+              <select name="sex" value={formData.sex} onChange={handleChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
             </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2E7D32' }}>🏷️ Category</label>
+              <select name="patientCategory" value={formData.patientCategory} onChange={(e) => {
+                handleChange(e);
+                setFormData({
+                  ...formData,
+                  patientCategory: e.target.value,
+                  patientType: e.target.value === 'OB' ? 'NSVD' : 'Gyne'
+                });
+              }} style={{ fontSize: '0.9rem', padding: '10px' }}>
+                <option value="OB">OB</option>
+                <option value="Gyne">Gyne</option>
+              </select>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>🏷️ Patient Category</label>
-            <select name="patientCategory" value={formData.patientCategory} onChange={(e) => {
-              handleChange(e);
-              // Reset patientType when category changes
-              setFormData({
-                ...formData,
-                patientCategory: e.target.value,
-                patientType: e.target.value === 'OB' ? 'NSVD' : 'Gyne'
-              });
-            }} style={{ 
-              fontSize: '1rem',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '2px solid #A5D6A7'
-            }}>
-              <option value="OB">OB</option>
-              <option value="Gyne">Gyne</option>
-            </select>
-          </div>
           {formData.patientCategory === 'OB' && (
-            <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>🏷️ Patient Type</label>
-              <select name="patientType" value={formData.patientType} onChange={handleChange} style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #A5D6A7'
-              }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2E7D32' }}>🏷️ Patient Type (OB Specific)</label>
+              <select name="patientType" value={formData.patientType} onChange={handleChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
                 {OB_PATIENT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
               </select>
             </div>
@@ -407,117 +364,86 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
 
         {/* Medical Details Section */}
         <div style={{ 
-          background: 'linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%)',
+          backgroundColor: '#fffaf2',
           borderRadius: '16px',
-          padding: '20px',
-          marginBottom: '24px',
-          border: '2px solid #FF9800',
-          boxShadow: '0 4px 12px rgba(255, 152, 0, 0.15)'
+          padding: '18px',
+          marginBottom: '20px',
+          border: '1px solid #ffe8cc'
         }}>
           <div style={{ 
-            fontSize: '1.2rem', 
+            fontSize: '1rem', 
             fontWeight: 800, 
             color: '#E65100', 
-            marginBottom: '16px',
+            marginBottom: '14px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '8px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
           }}>
-            <span style={{ fontSize: '1.5rem' }}>🩺</span>
+            <span style={{ fontSize: '1.2rem' }}>🩺</span>
             Medical Details
           </div>
-          <div className="form-group">
-            <label style={{ fontSize: '1rem', fontWeight: 600, color: '#E65100' }}>👨‍⚕️ Attending Physician</label>
-            <input type="text" name="doctor" value={formData.doctor} onChange={handleChange} placeholder="Dr. Santos" style={{ 
-              fontSize: '1rem',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '2px solid #FFCC80'
-            }} />
+          <div className="form-row">
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#E65100' }}>👨‍⚕️ Physician</label>
+              <input type="text" name="doctor" value={formData.doctor} onChange={handleChange} placeholder="Dr. Santos" style={{ fontSize: '0.9rem', padding: '10px' }} />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#E65100' }}>⚠️ Allergies</label>
+              <input type="text" name="allergy" value={formData.allergy} onChange={handleChange} placeholder="NKDA / Penicillin..." style={{ fontSize: '0.9rem', padding: '10px' }} />
+            </div>
           </div>
-          <div className="form-group">
-            <label style={{ fontSize: '1rem', fontWeight: 600, color: '#E65100' }}>📋 Diagnosis / Chief Complaint</label>
-            <input type="text" name="diag" value={formData.diag} onChange={handleChange} placeholder="e.g. Community-acquired pneumonia" style={{ 
-              fontSize: '1rem',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '2px solid #FFCC80'
-            }} />
-          </div>
-          <div className="form-group">
-            <label style={{ fontSize: '1rem', fontWeight: 600, color: '#E65100' }}>⚠️ Allergies (if any)</label>
-            <input type="text" name="allergy" value={formData.allergy} onChange={handleChange} placeholder="NKDA / Penicillin..." style={{ 
-              fontSize: '1rem',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '2px solid #FFCC80'
-            }} />
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#E65100' }}>📋 Diagnosis / Chief Complaint</label>
+            <input type="text" name="diag" value={formData.diag} onChange={handleChange} placeholder="e.g. Community-acquired pneumonia" style={{ fontSize: '0.9rem', padding: '10px' }} />
           </div>
         </div>
 
         {/* Schedules & Status Section */}
         <div style={{ 
-          background: 'linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)',
+          backgroundColor: '#fbf7ff',
           borderRadius: '16px',
-          padding: '20px',
-          marginBottom: '24px',
-          border: '2px solid #9C27B0',
-          boxShadow: '0 4px 12px rgba(156, 39, 176, 0.15)'
+          padding: '18px',
+          marginBottom: '30px',
+          border: '1px solid #efe3ff'
         }}>
           <div style={{ 
-            fontSize: '1.2rem', 
+            fontSize: '1rem', 
             fontWeight: 800, 
             color: '#6A1B9A', 
-            marginBottom: '16px',
+            marginBottom: '14px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '8px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
           }}>
-            <span style={{ fontSize: '1.5rem' }}>⏰</span>
+            <span style={{ fontSize: '1.2rem' }}>⏰</span>
             Schedules & Status
           </div>
-          <div className="form-row" style={{ gap: '12px' }}>
+          <div className="form-row">
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#6A1B9A' }}>❤️ Vital Signs Schedule</label>
-              <select name="vitalsSchedule" value={formData.vitalsSchedule} onChange={handleChange} style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #CE93D8'
-              }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6A1B9A' }}>❤️ Vital Signs</label>
+              <select name="vitalsSchedule" value={formData.vitalsSchedule} onChange={handleChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
                 {VITALS_SCHEDULES.map(schedule => <option key={schedule} value={schedule}>{schedule}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#6A1B9A' }}>⚖️ I&O Schedule</label>
-              <select name="ioSchedule" value={formData.ioSchedule} onChange={handleChange} style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #CE93D8'
-              }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6A1B9A' }}>⚖️ I&O</label>
+              <select name="ioSchedule" value={formData.ioSchedule} onChange={handleChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
                 {IO_SCHEDULES.map(schedule => <option key={schedule} value={schedule}>{schedule}</option>)}
               </select>
             </div>
           </div>
-          <div className="form-row" style={{ gap: '12px' }}>
+          <div className="form-row">
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#6A1B9A' }}>📅 Admission Date</label>
-              <input type="date" name="admit" value={formData.admit} onChange={handleChange} max={today} style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #CE93D8'
-              }} />
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6A1B9A' }}>📅 Date Admitted</label>
+              <input type="date" name="admit" value={formData.admit} onChange={handleChange} max={today} style={{ fontSize: '0.9rem', padding: '10px' }} />
             </div>
             <div className="form-group">
-              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#6A1B9A' }}>📊 Patient Status</label>
-              <select name="status" value={formData.status} onChange={handleChange} style={{ 
-                fontSize: '1rem',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '2px solid #CE93D8'
-              }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6A1B9A' }}>📊 Status</label>
+              <select name="status" value={formData.status} onChange={handleChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
                 <option value="admitted">Admitted</option>
                 <option value="for billing">For Billing</option>
                 <option value="for discharge">For Discharge</option>
@@ -526,22 +452,22 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
           </div>
         </div>
         
-        <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+        <div style={{ display: 'flex', gap: '12px' }}>
           <button className="btn btn-ghost" style={{ 
             flex: 1, 
-            fontSize: '1.1rem',
+            fontSize: '1rem',
             padding: '14px',
             borderRadius: '12px',
-            fontWeight: 600
+            fontWeight: 700
           }} onClick={onClose}>❌ Cancel</button>
           <button className="btn btn-primary" style={{ 
             flex: 2, 
-            fontSize: '1.1rem',
+            fontSize: '1rem',
             padding: '14px',
             borderRadius: '12px',
-            fontWeight: 700,
-            boxShadow: '0 4px 12px rgba(23, 107, 135, 0.3)'
-          }} onClick={handleSave}>💾 Save Patient</button>
+            fontWeight: 800,
+            boxShadow: '0 4px 15px rgba(11, 79, 108, 0.25)'
+          }} onClick={handleSave}>💾 Save Clinical Profile</button>
         </div>
       </div>
     </div>
