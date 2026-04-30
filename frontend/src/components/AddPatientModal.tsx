@@ -15,7 +15,7 @@ const WARDS = [
 ];
 
 const BEDS = ['1', '2', '3', '4', '5', '6'];
-const PATIENT_TYPES = ['Post CS', 'NSVD', 'Gyne'];
+const OB_PATIENT_TYPES = ['Post CS', 'NSVD'];
 const VITALS_SCHEDULES = ['Q4', 'Q6', 'Q8', 'QShift'];
 const IO_SCHEDULES = ['QShift', 'Q8', 'Q12', 'Q24'];
 
@@ -43,6 +43,7 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
     lname: patient?.lname || '',
     age: patient?.age || '',
     sex: patient?.sex || 'Male',
+    patientCategory: patient?.patientType === 'Gyne' ? 'Gyne' : 'OB',
     patientType: patient?.patientType || 'Gyne',
     vitalsSchedule: patient?.vitalsSchedule || 'Q4',
     ioSchedule: patient?.ioSchedule || 'QShift',
@@ -370,16 +371,38 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
           </div>
 
           <div className="form-group">
-            <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>🏷️ Patient Type</label>
-            <select name="patientType" value={formData.patientType} onChange={handleChange} style={{ 
+            <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>🏷️ Patient Category</label>
+            <select name="patientCategory" value={formData.patientCategory} onChange={(e) => {
+              handleChange(e);
+              // Reset patientType when category changes
+              setFormData({
+                ...formData,
+                patientCategory: e.target.value,
+                patientType: e.target.value === 'OB' ? 'NSVD' : 'Gyne'
+              });
+            }} style={{ 
               fontSize: '1rem',
               padding: '12px',
               borderRadius: '8px',
               border: '2px solid #A5D6A7'
             }}>
-              {PATIENT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+              <option value="OB">OB</option>
+              <option value="Gyne">Gyne</option>
             </select>
           </div>
+          {formData.patientCategory === 'OB' && (
+            <div className="form-group">
+              <label style={{ fontSize: '1rem', fontWeight: 600, color: '#2E7D32' }}>🏷️ Patient Type</label>
+              <select name="patientType" value={formData.patientType} onChange={handleChange} style={{ 
+                fontSize: '1rem',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '2px solid #A5D6A7'
+              }}>
+                {OB_PATIENT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Medical Details Section */}
