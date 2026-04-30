@@ -91,14 +91,108 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
       );
     }
     if (type === 'ivfluids' || type === 'iv') {
+      const handleBottleNoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value.replace(/^D/i, ''); // strip leading D if user types it
+        const formatted = raw ? `D${raw}` : '';
+        setFormData({ ...formData, bottleNo: formatted });
+      };
+
+      const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value.replace(/\s*gtts\/min$/i, ''); // strip unit if present
+        const formatted = raw ? `${raw} gtts/min` : '';
+        setFormData({ ...formData, rate: formatted });
+      };
+
+      const bottleDisplay = (formData.bottleNo || '').replace(/^D/i, '');
+      const rateDisplay = (formData.rate || '').replace(/\s*gtts\/min$/i, '');
+
       return (
         <>
           <div className="form-row">
-            <div className="form-group"><label>Bottle Number</label><input type="text" name="bottleNo" value={formData.bottleNo || ''} onChange={handleChange} /></div>
-            <div className="form-group"><label>Flow Rate</label><input type="text" name="rate" value={formData.rate || ''} onChange={handleChange} placeholder="e.g. 20 gtts/min" /></div>
+            <div className="form-group">
+              <label>Bottle Number</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--primary, #00A896)', lineHeight: 1 }}>D</span>
+                <input
+                  type="number"
+                  min="1"
+                  name="bottleNo"
+                  value={bottleDisplay}
+                  onChange={handleBottleNoChange}
+                  placeholder="e.g. 1"
+                  style={{ flex: 1 }}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Flow Rate</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <input
+                  type="number"
+                  min="1"
+                  name="rate"
+                  value={rateDisplay}
+                  onChange={handleRateChange}
+                  placeholder="e.g. 20"
+                  style={{ flex: 1 }}
+                />
+                <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary, #888)', whiteSpace: 'nowrap' }}>gtts/min</span>
+              </div>
+            </div>
           </div>
-          <div className="form-group"><label>Type of Fluid</label><input type="text" name="fluid" value={formData.fluid || ''} onChange={handleChange} /></div>
-          <div className="form-group"><label>Mixture</label><input type="text" name="mixture" value={formData.mixture || ''} onChange={handleChange} placeholder="e.g. with Oxytocin" /></div>
+          <div className="form-group">
+            <label>Type of Fluid</label>
+            <select name="fluid" value={formData.fluid || ''} onChange={handleChange}>
+              <option value="">Select fluid...</option>
+              <option value="PNSS">PNSS (Plain Normal Saline Solution)</option>
+              <option value="PLR">PLR (Plain Lactated Ringer's)</option>
+              <option value="D5LR">D5LR (Dextrose 5% in Lactated Ringer's)</option>
+              <option value="D5NM">D5NM (Dextrose 5% in Normal Saline)</option>
+              <option value="D5W">D5W (Dextrose 5% in Water)</option>
+              <option value="D50.3NaCl">D5 0.3% NaCl</option>
+              <option value="D50.45NaCl">D5 0.45% NaCl</option>
+              <option value="D10W">D10W (Dextrose 10% in Water)</option>
+              <option value="0.9NaCl">0.9% NaCl (Normal Saline)</option>
+              <option value="0.45NaCl">0.45% NaCl (Half Normal Saline)</option>
+              <option value="Ringer's Lactate">Ringer's Lactate</option>
+              <option value="Isolyte S">Isolyte S</option>
+              <option value="Sterofundin">Sterofundin</option>
+              <option value="Albumin 25%">Albumin 25%</option>
+              <option value="Mannitol 20%">Mannitol 20%</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Mixture</label><input type="text" name="mixture" value={formData.mixture || ''} onChange={handleChange} placeholder="e.g. Oxytocin" /></div>
+            <div className="form-group">
+              <label>Amount</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  name="mixtureAmount"
+                  value={formData.mixtureAmount || ''}
+                  onChange={handleChange}
+                  placeholder="e.g. 10"
+                  style={{ flex: 1 }}
+                />
+                <select
+                  name="mixtureUnit"
+                  value={formData.mixtureUnit || 'units'}
+                  onChange={handleChange}
+                  style={{ width: 'auto', flexShrink: 0 }}
+                >
+                  <option value="units">units</option>
+                  <option value="mL">mL</option>
+                  <option value="mg">mg</option>
+                  <option value="mcg">mcg</option>
+                  <option value="mEq">mEq</option>
+                  <option value="g">g</option>
+                </select>
+              </div>
+            </div>
+          </div>
           <div className="form-row">
             <div className="form-group"><label>Status</label>
               <select name="ivStatus" value={formData.ivStatus || 'ongoing'} onChange={handleChange}>
@@ -107,7 +201,24 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
                 <option value="heplock">Heplock</option>
               </select>
             </div>
-            <div className="form-group"><label>IV Insertion Site</label><input type="text" name="site" value={formData.site || ''} onChange={handleChange} placeholder="e.g. Left forearm" /></div>
+            <div className="form-group">
+              <label>IV Insertion Site</label>
+              <select name="site" value={formData.site || ''} onChange={handleChange}>
+                <option value="">Select site...</option>
+                <option value="Left forearm">Left forearm</option>
+                <option value="Right forearm">Right forearm</option>
+                <option value="Left hand">Left hand</option>
+                <option value="Right hand">Right hand</option>
+                <option value="Left antecubital">Left antecubital</option>
+                <option value="Right antecubital">Right antecubital</option>
+                <option value="Left wrist">Left wrist</option>
+                <option value="Right wrist">Right wrist</option>
+                <option value="Left upper arm">Left upper arm</option>
+                <option value="Right upper arm">Right upper arm</option>
+                <option value="Scalp vein">Scalp vein</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
           <div className="form-row">
             <div className="form-group"><label>Start Time</label><input type="datetime-local" name="startTime" value={formData.startTime ? new Date(formData.startTime).toISOString().slice(0, 16) : ''} onChange={handleChange} /></div>

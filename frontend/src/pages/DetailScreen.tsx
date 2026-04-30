@@ -86,11 +86,14 @@ export default function DetailScreen() {
           const summaries = await Promise.all((pRes.data || []).map(async (p: any) => {
             const patientSbar = await apiWithCache.get(`/records/sbar_${p.id}`).catch(() => ({ data: [] }));
             const patientOrders = await apiWithCache.get(`/records/orders_${p.id}`).catch(() => ({ data: [] }));
-            return { patient: p, record: latestOf(patientSbar.data || []), orders: patientOrders.data || [] };
+            const patientIv = await apiWithCache.get(`/records/iv_${p.id}`).catch(() => ({ data: [] }));
+            return { patient: p, record: latestOf(patientSbar.data || []), orders: patientOrders.data || [], ivFluids: patientIv.data || [] };
           }));
           setAllSbarSummaries(summaries);
-          const currentOrders = summaries.find((summary: any) => summary.patient.id === id)?.orders || [];
-          setRelatedRecords({ orders: currentOrders });
+          const currentSummary = summaries.find((summary: any) => summary.patient.id === id);
+          const currentOrders = currentSummary?.orders || [];
+          const currentIv = currentSummary?.ivFluids || [];
+          setRelatedRecords({ orders: currentOrders, ivFluids: currentIv });
         } else {
           setRelatedRecords({});
           setAllSbarSummaries([]);
@@ -138,14 +141,18 @@ export default function DetailScreen() {
     }).join(' ');
   };
 
-  const getSbarSummary = (p: any, record?: any, orders: any[] = []) => {
+  const getSbarSummary = (p: any, record?: any, orders: any[] = [], ivFluids: any[] = []) => {
     const room = p.ward_name ? `${p.ward_name} Bed ${p.bed_number || '-'}` : `Room ${p.room || '-'}`;
     const patientType = ['Post CS', 'NSVD', 'Gyne'].includes(String(p.patientType || '')) ? p.patientType : String(p.ward_type || '').toLowerCase().includes('ob') ? 'NSVD' : 'Gyne';
     const scheduleText = `VS ${p.vitalsSchedule || 'Q4'}, I&O ${p.ioSchedule || 'QShift'}.`;
     const orderText = formatOrdersForSbar(orders);
+    const activeIv = ivFluids.filter((iv: any) => (iv.ivStatus || 'ongoing') === 'ongoing' || (iv.ivStatus || 'ongoing') === 'to follow');
+    const ivText = activeIv.length
+      ? activeIv.map((iv: any) => `${iv.bottleNo || 'D?'} ${iv.fluid || 'IV Fluid'}${iv.mixture ? ` with ${iv.mixture}${iv.mixtureAmount ? ` ${iv.mixtureAmount}${iv.mixtureUnit || 'units'}` : ''}` : ''} @ ${iv.rate || '-'}`).join('; ')
+      : 'No active IV fluids.';
     return {
       situation: record?.situation || `${p.fname} ${p.lname}, ${p.age || '-'} y/o ${p.sex || '-'}, ${patientType}, ${room}. Diagnosis: ${p.diag || '-'}.`,
-      background: record?.background || `Patient type: ${patientType}. Monitoring schedule: ${scheduleText} Admitted ${p.admit ? new Date(p.admit).toLocaleDateString('en-PH') : '-'} under ${p.doctor || '-'}. Allergy: ${p.allergy || 'NKDA'}.`,
+      background: record?.background || `Patient type: ${patientType}. Monitoring schedule: ${scheduleText} Admitted ${p.admit ? new Date(p.admit).toLocaleDateString('en-PH') : '-'} under ${p.doctor || '-'}. Allergy: ${p.allergy || 'NKDA'}. IV: ${ivText}`,
       assessment: record?.assessment || `Important orders: ${orderText}`,
       recommendation: record?.recommendation || (orders.some(order => (order.orderStatus || 'Pending') !== 'Completed') ? 'Continue follow-up on pending/ongoing important orders.' : '-'),
       by: record?.by || 'No manual SBAR entry',
@@ -225,7 +232,7 @@ export default function DetailScreen() {
       {sortedRecords.map(r => (
         <div key={r.id} className="history-item" style={{ borderLeftColor: '#00A896' }}>
           <div className="history-value">Bottle #{r.bottleNo || '-'} | {r.fluid || 'IV Fluid'}</div>
-          <div className="history-time">Mixture: {r.mixture || 'None'} | Rate: {r.rate || '-'}</div>
+          <div className="history-time">Mixture: {r.mixture ? `${r.mixture}${r.mixtureAmount ? ` ${r.mixtureAmount}${r.mixtureUnit || 'units'}` : ''}` : 'None'} | Rate: {r.rate || '-'}</div>
           <div className="history-time">Status: {(r.ivStatus || 'ongoing').toUpperCase()} | Site: {r.site || '-'}</div>
           <div className="history-time">Start: {r.startTime ? new Date(r.startTime).toLocaleString() : '-'} | End: {r.endTime ? new Date(r.endTime).toLocaleString() : '-'}</div>
           {recordActions(r)}
@@ -503,7 +510,8 @@ export default function DetailScreen() {
   const renderSbarModule = () => {
     const latestRecord = sortedRecords[0];
     const patientOrders = relatedRecords.orders || [];
-    const patientSummary = getSbarSummary(patient, latestRecord, patientOrders);
+    const patientIvFluids = relatedRecords.ivFluids || [];
+    const patientSummary = getSbarSummary(patient, latestRecord, patientOrders, patientIvFluids);
 
     return (
       <>
@@ -519,16 +527,16 @@ export default function DetailScreen() {
           <>
             <div className="section-label">Previous Manual Entries</div>
             <div className="history-list">
-              {sortedRecords.slice(1).map(r => renderSbarCard(getSbarSummary(patient, r, patientOrders), `${patient.fname} ${patient.lname}`, r))}
+              {sortedRecords.slice(1).map(r => renderSbarCard(getSbarSummary(patient, r, patientOrders, patientIvFluids), `${patient.fname} ${patient.lname}`, r))}
             </div>
           </>
         )}
 
         <div className="section-label">Multiple Patient SBAR Summary</div>
         <div className="history-list">
-          {allSbarSummaries.map(({ patient: summaryPatient, record, orders }) => (
+          {allSbarSummaries.map(({ patient: summaryPatient, record, orders, ivFluids: summaryIv }: any) => (
             <div key={summaryPatient.id}>
-              {renderSbarCard(getSbarSummary(summaryPatient, record, orders || []), `${summaryPatient.fname} ${summaryPatient.lname}`, undefined)}
+              {renderSbarCard(getSbarSummary(summaryPatient, record, orders || [], summaryIv || []), `${summaryPatient.fname} ${summaryPatient.lname}`, undefined)}
             </div>
           ))}
         </div>
