@@ -86,6 +86,22 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
               <option value="pending">Pending</option><option value="submitted">Submitted</option><option value="received">Results Received</option>
             </select>
           </div>
+          {formData.status === 'received' && (
+            <div className="form-group">
+              <label>Lab Result Image (Mock)</label>
+              <div style={{ 
+                border: '2px dashed #ddd', 
+                borderRadius: '8px', 
+                padding: '20px', 
+                textAlign: 'center', 
+                backgroundColor: '#f9f9f9',
+                cursor: 'pointer'
+              }} onClick={() => alert('Image upload is currently a mock UI.')}>
+                <span style={{ fontSize: '24px' }}>📷</span>
+                <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '8px' }}>Click to upload or drag result image</div>
+              </div>
+            </div>
+          )}
           <div className="form-group"><label>Result Preview (Optional)</label><input type="text" name="result" value={formData.result || ''} onChange={handleChange} /></div>
         </>
       );

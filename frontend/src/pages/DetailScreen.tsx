@@ -256,6 +256,23 @@ export default function DetailScreen() {
             <div className="history-value">{r.name || 'Lab test'}</div>
             <div className="history-time">Ordered: {new Date(r.orderedAt || r.ts).toLocaleString()}</div>
             <div className="history-time">Status: {(r.status || 'pending').toUpperCase()} {r.result ? `| Result: ${r.result}` : ''}</div>
+            {r.status === 'received' && (
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ 
+                  width: '60px', 
+                  height: '60px', 
+                  backgroundColor: '#eee', 
+                  borderRadius: '4px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '20px',
+                  border: '1px solid #ddd'
+                }} title="View full result">
+                  📄
+                </div>
+              </div>
+            )}
             {recordActions(r)}
           </div>
         ))}
