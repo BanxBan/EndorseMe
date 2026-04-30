@@ -131,7 +131,7 @@ export default function Dashboard() {
 
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
             <div className="home-title" style={{ marginBottom: '10px' }}>Patient Overview</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ fontSize: '1.4rem', backgroundColor: 'rgba(23, 107, 135, 0.1)', color: '#176B87', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👥</div>
                 <div>
@@ -140,21 +140,14 @@ export default function Dashboard() {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ fontSize: '1.4rem' }}>🤰</div>
+                <div style={{ fontSize: '1.4rem', backgroundColor: 'rgba(106, 27, 154, 0.1)', color: '#6A1B9A', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🤰</div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>Post CS</div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#04364A' }}>{postCsCount}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>OB</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#04364A' }}>{postCsCount + nsvdCount}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ fontSize: '1.4rem' }}>🔵</div>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>NSVD</div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#04364A' }}>{nsvdCount}</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ fontSize: '1.4rem' }}>🩺</div>
+                <div style={{ fontSize: '1.4rem', backgroundColor: 'rgba(27, 94, 32, 0.1)', color: '#1B5E20', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🩺</div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>Gyne</div>
                   <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#04364A' }}>{gyneCount}</div>
