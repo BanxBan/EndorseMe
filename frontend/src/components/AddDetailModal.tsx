@@ -45,9 +45,41 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
       );
     }
     if (type === 'labs') {
+      const labCategories: Record<string, string[]> = {
+        hematology: ['Complete Blood Count (CBC)', 'Prothrombin Time (PT)', 'Active Partial Thromboplastin Time (aPTT)', 'Erythrocyte Sedimentation Rate (ESR)'],
+        serology: ['HBsAg', 'HIV test', 'C-reactive protein (CRP)'],
+        clinical_microscopy: ['Urinalysis (UA)', 'Fecalysis', 'Pregnancy test'],
+        clinical_chemistry: [],
+        diagnostic_imaging: [],
+        cardiopulmonary_diagnostics: []
+      };
+
+      const selectedCategory = formData.category || '';
+      const availableTests = labCategories[selectedCategory] || [];
+
       return (
         <>
-          <div className="form-group"><label>Test Name</label><input type="text" name="name" value={formData.name || ''} onChange={handleChange} /></div>
+          <div className="form-group"><label>Category</label>
+            <select name="category" value={formData.category || ''} onChange={handleChange}>
+              <option value="">Select Category</option>
+              <option value="hematology">Hematology</option>
+              <option value="serology">Serology</option>
+              <option value="clinical_microscopy">Clinical Microscopy</option>
+              <option value="clinical_chemistry">Clinical Chemistry</option>
+              <option value="diagnostic_imaging">Diagnostic Imaging</option>
+              <option value="cardiopulmonary_diagnostics">Cardiopulmonary Diagnostics</option>
+            </select>
+          </div>
+          {availableTests.length > 0 ? (
+            <div className="form-group"><label>Test Name</label>
+              <select name="name" value={formData.name || ''} onChange={handleChange}>
+                <option value="">Select Test</option>
+                {availableTests.map(test => <option key={test} value={test}>{test}</option>)}
+              </select>
+            </div>
+          ) : (
+            <div className="form-group"><label>Test Name</label><input type="text" name="name" value={formData.name || ''} onChange={handleChange} placeholder="Enter test name" /></div>
+          )}
           <div className="form-group"><label>Date/Time Ordered</label><input type="datetime-local" name="orderedAt" value={formData.orderedAt ? new Date(formData.orderedAt).toISOString().slice(0, 16) : ''} onChange={handleChange} /></div>
           <div className="form-group"><label>Status</label>
             <select name="status" value={formData.status || 'pending'} onChange={handleChange}>
