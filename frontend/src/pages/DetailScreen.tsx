@@ -148,7 +148,13 @@ export default function DetailScreen() {
     const orderText = formatOrdersForSbar(orders);
     const activeIv = ivFluids.filter((iv: any) => (iv.ivStatus || 'ongoing') === 'ongoing' || (iv.ivStatus || 'ongoing') === 'to follow');
     const ivText = activeIv.length
-      ? activeIv.map((iv: any) => `${iv.bottleNo || 'D?'} ${iv.fluid || 'IV Fluid'}${iv.mixture ? ` with ${iv.mixture}${iv.mixtureAmount ? ` ${iv.mixtureAmount}${iv.mixtureUnit || 'units'}` : ''}` : ''} @ ${iv.rate || '-'}`).join('; ')
+      ? activeIv.map((iv: any) => {
+          const b = iv.bottleNo || '';
+          const bottle = b.toUpperCase().startsWith('D') ? b : (b ? `D${b}` : 'D?');
+          const r = iv.rate || '';
+          const rate = r.toLowerCase().includes('gtts/min') ? r : (r ? `${r} gtts/min` : '-');
+          return `${bottle} ${iv.fluid || 'IV Fluid'}${iv.mixture ? ` with ${iv.mixture}${iv.mixtureAmount ? ` ${iv.mixtureAmount}${iv.mixtureUnit || 'units'}` : ''}` : ''} @ ${rate}`;
+        }).join('; ')
       : 'No active IV fluids.';
     return {
       situation: record?.situation || `${p.fname} ${p.lname}, ${p.age || '-'} y/o ${p.sex || '-'}, ${patientType}, ${room}. Diagnosis: ${p.diag || '-'}.`,
@@ -231,8 +237,8 @@ export default function DetailScreen() {
     <div className="history-list">
       {sortedRecords.map(r => (
         <div key={r.id} className="history-item" style={{ borderLeftColor: '#00A896' }}>
-          <div className="history-value">Bottle #{r.bottleNo || '-'} | {r.fluid || 'IV Fluid'}</div>
-          <div className="history-time">Mixture: {r.mixture ? `${r.mixture}${r.mixtureAmount ? ` ${r.mixtureAmount}${r.mixtureUnit || 'units'}` : ''}` : 'None'} | Rate: {r.rate || '-'}</div>
+          <div className="history-value">{r.bottleNo ? (String(r.bottleNo).toUpperCase().startsWith('D') ? r.bottleNo : `D${r.bottleNo}`) : 'Bottle # -'} | {r.fluid || 'IV Fluid'}</div>
+          <div className="history-time">Mixture: {r.mixture ? `${r.mixture}${r.mixtureAmount ? ` ${r.mixtureAmount}${r.mixtureUnit || 'units'}` : ''}` : 'None'} | Rate: {r.rate ? (String(r.rate).toLowerCase().includes('gtts/min') ? r.rate : `${r.rate} gtts/min`) : '-'}</div>
           <div className="history-time">Status: {(r.ivStatus || 'ongoing').toUpperCase()} | Site: {r.site || '-'}</div>
           <div className="history-time">Start: {r.startTime ? new Date(r.startTime).toLocaleString() : '-'} | End: {r.endTime ? new Date(r.endTime).toLocaleString() : '-'}</div>
           {recordActions(r)}
