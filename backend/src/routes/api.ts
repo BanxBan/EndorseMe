@@ -14,8 +14,12 @@ router.get('/patients', async (req, res) => {
 router.post('/patients', async (req, res) => {
   const newId = Date.now().toString();
   const { data, error } = await supabase.from('patients').insert([{ id: newId, data: req.body }]).select();
-  if (error) return res.status(500).json({ error: error.message });
-  res.status(201).json({ ...data[0].data, id: data[0].id });
+  if (error) {
+    console.error('Supabase Error:', error);
+    return res.status(500).json({ error: `Database Error: ${error.message}` });
+  }
+  const result = data?.[0]?.data || {};
+  res.status(201).json({ ...result, id: data?.[0]?.id });
 });
 
 router.put('/patients/:id', async (req, res) => {
