@@ -199,7 +199,7 @@ export default function PatientProfile() {
           </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/so`)}>
             <span className="icon-tile-emoji">📝</span>
-            <div className="icon-tile-label">SO & Important Orders</div>
+            <div className="icon-tile-label">SO</div>
           </div>
         </div>
 

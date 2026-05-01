@@ -12,16 +12,23 @@ const getCurrentShift = () => {
 
 export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
+  const [allRecords, setAllRecords] = useState<any[]>([]);
   const [filterMode, setFilterMode] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showUrgentPanel, setShowUrgentPanel] = useState(false);
+  const [urgentPanelFilter, setUrgentPanelFilter] = useState<'all' | 'labs' | 'meds' | 'new' | 'critical'>('all');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const res = await apiWithCache.get('/patients');
-      setPatients(res.data);
+      const [patientsRes, recordsRes] = await Promise.all([
+        apiWithCache.get('/patients'),
+        apiWithCache.get('/all-records')
+      ]);
+      setPatients(patientsRes.data);
+      setAllRecords(recordsRes.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -50,6 +57,7 @@ export default function Dashboard() {
     if (normalized === 'stable') return 'admitted';
     if (normalized === 'fair') return 'for billing';
     if (normalized === 'critical') return 'for discharge';
+    if (normalized === 'discharged') return 'discharged';
     return normalized || 'admitted';
   };
 
@@ -95,19 +103,37 @@ export default function Dashboard() {
   const nurseName = (storedName && !storedName.includes('@')) ? storedName : 'Nurse';
   const obCount = patients.filter(p => getPatientType(p) === 'OB').length;
   const gyneCount = patients.filter(p => getPatientType(p) === 'Gyne').length;
-  const pendingMeds = patients.filter(p => normalizeStatus(p.status) !== 'admitted').length;
   const pendingLabsOrProcedures = patients.filter(p => normalizeStatus(p.status) === 'for billing').length;
+
+  const getShiftPendingMeds = (patientId: string) => {
+    const shift = getCurrentShift();
+    const meds = allRecords.filter(r => r.patientId === patientId && r.type === 'med' && r.medStatus === 'Active' && r.freq !== 'PRN');
+    if (shift === 'AM') {
+      return meds.filter(m => ['OD', 'BID', 'TID', 'QID'].includes(m.freq));
+    }
+    if (shift === 'PM') {
+      return meds.filter(m => ['BID', 'TID', 'QID'].includes(m.freq));
+    }
+    return meds; // NOC
+  };
+
+  const patientsWithPendingMeds = patients.filter(p => getShiftPendingMeds(p.id).length > 0);
+  const pendingMeds = patientsWithPendingMeds.length;
   const urgentNotifications = patients.flatMap(p => {
     const notifications = [];
     const status = normalizeStatus(p.status);
+    if (status === 'discharged') return []; // No notifications for discharged patients
+    
     if (status === 'for discharge') {
-      notifications.push({ id: `${p.id}-critical`, patient: p, type: 'critical', msg: 'Critical Status - Immediate attention', icon: '🔴', target: `/patient/${p.id}` });
+      notifications.push({ id: `${p.id}-critical`, patient: p, type: 'critical', msg: p.diag || 'Critical Status', icon: '🔴', target: `/patient/${p.id}` });
     }
     if (status === 'for billing') {
-      notifications.push({ id: `${p.id}-labs`, patient: p, type: 'labs', msg: 'Pending labs/procedures', icon: '🧪', target: `/patient/${p.id}/labs` });
+      const pendingLab = (p.importantOrders || []).find((o: any) => o.orderStatus !== 'Completed')?.description;
+      notifications.push({ id: `${p.id}-labs`, patient: p, type: 'labs', msg: pendingLab ? `Pending: ${pendingLab}` : 'Pending labs/procedures', icon: '🧪', target: `/patient/${p.id}/labs` });
     }
-    if (status !== 'admitted') {
-      notifications.push({ id: `${p.id}-meds`, patient: p, type: 'meds', msg: 'Due medications', icon: '💊', target: `/patient/${p.id}/meds` });
+    const shiftMeds = getShiftPendingMeds(p.id);
+    if (shiftMeds.length > 0) {
+      notifications.push({ id: `${p.id}-meds`, patient: p, type: 'meds', msg: `Due: ${shiftMeds.map(m => m.name).join(', ')}`, icon: '💊', target: `/patient/${p.id}/meds` });
     }
     // If patient was added in the last 12 hours
     const patientTs = Number(p.id);
@@ -117,6 +143,7 @@ export default function Dashboard() {
     return notifications;
   });
   const urgentAlertsCount = urgentNotifications.length;
+  const criticalAlertsCount = urgentNotifications.filter(n => n.type === 'critical').length;
   const newEndorsementsCount = urgentNotifications.filter(n => n.type === 'new').length;
 
   const handleEndorsePatient = () => {
@@ -184,19 +211,22 @@ export default function Dashboard() {
             </div>
           </div>
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <div className="home-title" style={{ marginBottom: '10px' }}>Notifications</div>
-            <div className="info-row" onClick={() => { setFilterMode('ALL'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+            <div className="home-title" style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => { setUrgentPanelFilter('all'); setShowUrgentPanel(true); }}>
+              <span>Notifications</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>View All →</span>
+            </div>
+            <div className="info-row" onClick={() => { setUrgentPanelFilter('new'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer' }}>
               <span className="info-key">New endorsements</span>
               <span className="info-val">{newEndorsementsCount}</span>
             </div>
-            <div className="info-row" onClick={() => { setFilterMode('FOR_BILLING'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+            <div className="info-row" onClick={() => { setUrgentPanelFilter('labs'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer' }}>
               <span className="info-key">Pending acknowledgments</span>
               <span className="info-val">{pendingLabsOrProcedures}</span>
             </div>
-            <div className="info-row" onClick={() => { setFilterMode('FOR_DISCHARGE'); scrollToPatientList(); }} style={{ cursor: 'pointer', border: urgentAlertsCount > 0 ? '1px solid var(--danger)' : 'none', borderRadius: '8px', padding: '4px 8px' }}>
+            <div className="info-row" onClick={() => { setUrgentPanelFilter('critical'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer', border: criticalAlertsCount > 0 ? '1px solid var(--danger)' : 'none', borderRadius: '8px', padding: '4px 8px' }}>
               <span className="info-key">Urgent alerts</span>
-              <span className={`info-val ${urgentAlertsCount > 0 ? 'pulse-danger' : ''}`} style={urgentAlertsCount > 0 ? { color: 'var(--danger)', fontWeight: 800 } : {}}>
-                {urgentAlertsCount}
+              <span className={`info-val ${criticalAlertsCount > 0 ? 'pulse-danger' : ''}`} style={criticalAlertsCount > 0 ? { color: 'var(--danger)', fontWeight: 800 } : {}}>
+                {criticalAlertsCount}
               </span>
             </div>
           </div>
@@ -204,21 +234,37 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-main">
-          {urgentAlertsCount > 0 && (
-            <div className="urgent-notification-panel" style={{ marginBottom: '20px' }}>
-              <div className="home-title" style={{ color: '#fff', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="pulse-icon">🔔</span> Urgent Tasks & Notifications
-              </div>
-              <div style={{ marginTop: '10px', display: 'grid', gap: '8px' }}>
-                {urgentNotifications.map(n => (
-                  <div key={n.id} className="notification-item" onClick={() => navigate(n.target)}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontWeight: 700 }}>{n.patient.fname} {n.patient.lname}</div>
-                      <span style={{ fontSize: '1.1rem' }}>{n.icon}</span>
+          {showUrgentPanel && (
+            <div className="modal-overlay open" onClick={(e) => { if (e.target === e.currentTarget) setShowUrgentPanel(false) }}>
+              <div className="modal" style={{ transform: 'translateY(0)', maxWidth: '500px' }}>
+                <div className="modal-handle"></div>
+                <div className="modal-title" style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="pulse-icon">🔔</span> {urgentPanelFilter === 'all' ? 'Urgent Tasks & Notifications' : 
+                                                          urgentPanelFilter === 'labs' ? 'Pending Labs/Procedures' :
+                                                          urgentPanelFilter === 'meds' ? 'Pending Medications' :
+                                                          urgentPanelFilter === 'new' ? 'New Endorsements' : 'Urgent Alerts'}
+                </div>
+                
+                <div style={{ marginTop: '20px', display: 'grid', gap: '12px', maxHeight: '60vh', overflowY: 'auto', paddingRight: '5px' }}>
+                  {urgentNotifications.filter(n => urgentPanelFilter === 'all' || n.type === urgentPanelFilter).length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 20px', color: '#666' }}>
+                      <div style={{ fontSize: '3rem', marginBottom: '10px' }}>✅</div>
+                      <div>All caught up! No {urgentPanelFilter === 'all' ? 'urgent' : urgentPanelFilter} tasks.</div>
                     </div>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>{n.msg}</div>
-                  </div>
-                ))}
+                  ) : urgentNotifications.filter(n => urgentPanelFilter === 'all' || n.type === urgentPanelFilter).map(n => (
+                    <div key={n.id} className="notification-item" onClick={() => { navigate(n.target); setShowUrgentPanel(false); }} style={{ cursor: 'pointer', border: '1px solid #eee' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ fontWeight: 700, color: '#333' }}>{n.patient.fname} {n.patient.lname}</div>
+                        <span style={{ fontSize: '1.2rem' }}>{n.icon}</span>
+                      </div>
+                      {n.msg && <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>{n.msg}</div>}
+                    </div>
+                  ))}
+                </div>
+                
+                <div style={{ marginTop: '25px', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="btn btn-ghost" onClick={() => setShowUrgentPanel(false)}>Close</button>
+                </div>
               </div>
             </div>
           )}
@@ -238,11 +284,11 @@ export default function Dashboard() {
 
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
             <div className="home-title" style={{ marginBottom: '10px' }}>Task Summary</div>
-            <div className="info-row" onClick={() => { setFilterMode('FOR_BILLING'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+            <div className="info-row" onClick={() => { setUrgentPanelFilter('labs'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer' }}>
               <span className="info-key">Pending labs/procedures</span>
               <span className="info-val">{pendingLabsOrProcedures}</span>
             </div>
-            <div className="info-row" onClick={() => { setFilterMode('PENDING_MEDS'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+            <div className="info-row" onClick={() => { setUrgentPanelFilter('meds'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer' }}>
               <span className="info-key">Pending meds</span>
               <span className="info-val">{pendingMeds}</span>
             </div>
@@ -299,9 +345,7 @@ export default function Dashboard() {
                   <span className={`patient-status-badge ${getStatusBadgeClass(p.status)}`}>
                     {normalizeStatus(p.status)}
                   </span>
-                  <div style={{ marginTop: '6px', fontSize: '0.7rem', fontWeight: 700, color: getPriority(p.status).color }}>
-                    {getPriority(p.status).icon} Priority: {getPriority(p.status).label}
-                  </div>
+
                 </div>
               ))}
             </div>

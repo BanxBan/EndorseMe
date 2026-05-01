@@ -59,4 +59,10 @@ router.delete('/records/:key/:id', async (req, res) => {
   res.sendStatus(204);
 });
 
+router.get('/all-records', async (req, res) => {
+  const { data, error } = await supabase.from('records').select('*');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json((data || []).map(d => ({ ...(d.data || {}), id: d.id, patientId: d.key?.split('_').pop() })));
+});
+
 export default router;

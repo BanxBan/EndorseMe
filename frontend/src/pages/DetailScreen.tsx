@@ -15,7 +15,7 @@ const detailMeta: any = {
   meds: { title: 'Medications', key: 'meds' },
   med_admin: { title: 'Medication Administration Log', key: 'med_admin' },
   attachments: { title: 'Attachments & Documents', key: 'docs' },
-  so: { title: 'SO & Important Orders', key: 'so' },
+  so: { title: 'SO', key: 'so' },
   status: { title: 'Current Status', key: 'status' },
   sbar: { title: 'SBAR Summary', key: 'sbar' },
 };
@@ -392,8 +392,8 @@ export default function DetailScreen() {
   );
 
   const renderMedsModule = () => {
-    const activeMeds = sortedRecords.filter(r => (r.medStatus || 'active') === 'active');
-    const discontinuedMeds = sortedRecords.filter(r => (r.medStatus || 'active') === 'discontinued');
+    const activeMeds = sortedRecords.filter(r => (r.medStatus || 'Active').toLowerCase() === 'active');
+    const discontinuedMeds = sortedRecords.filter(r => (r.medStatus || '').toLowerCase() === 'discontinued');
     const adminLogs = records.filter(r => r.type === 'med_admin').sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
 
     return (
