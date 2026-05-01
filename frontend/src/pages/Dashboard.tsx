@@ -61,13 +61,6 @@ export default function Dashboard() {
     return normalized || 'admitted';
   };
 
-  const getPriority = (status: string) => {
-    const s = normalizeStatus(status);
-    if (s === 'for discharge') return { label: 'High', color: '#d32f2f', icon: '🔴' };
-    if (s === 'for billing') return { label: 'Medium', color: '#ed6c02', icon: '🟠' };
-    return { label: 'Low', color: '#2e7d32', icon: '🟢' };
-  };
-
   const getStatusBadgeClass = (status: string) => {
     const s = normalizeStatus(status);
     if (s === 'for discharge') return 'badge-critical';
@@ -142,7 +135,6 @@ export default function Dashboard() {
     }
     return notifications;
   });
-  const urgentAlertsCount = urgentNotifications.length;
   const criticalAlertsCount = urgentNotifications.filter(n => n.type === 'critical').length;
   const newEndorsementsCount = urgentNotifications.filter(n => n.type === 'new').length;
 
