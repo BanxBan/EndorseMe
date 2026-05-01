@@ -23,14 +23,19 @@ export default function Dashboard() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const [patientsRes, recordsRes] = await Promise.all([
-        apiWithCache.get('/patients'),
-        apiWithCache.get('/all-records')
-      ]);
+      const patientsRes = await apiWithCache.get('/patients');
       setPatients(patientsRes.data);
-      setAllRecords(recordsRes.data);
+      
+      // Attempt to get records for med tracking, but don't fail if it's missing
+      try {
+        const recordsRes = await apiWithCache.get('/all-records');
+        setAllRecords(recordsRes.data);
+      } catch (recErr) {
+        console.warn('Medication tracking data unavailable yet:', recErr);
+        setAllRecords([]);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch patients:', err);
     } finally {
       setLoading(false);
     }
