@@ -13,6 +13,7 @@ const detailMeta: any = {
   vitals: { title: 'Vital Signs', key: 'vitals' },
   io: { title: 'Intake & Output', key: 'io' },
   meds: { title: 'Medications', key: 'meds' },
+  med_admin: { title: 'Medication Administration Log', key: 'med_admin' },
   attachments: { title: 'Attachments & Documents', key: 'docs' },
   so: { title: 'SO Notes', key: 'so' },
   status: { title: 'Current Status', key: 'status' },
@@ -393,28 +394,57 @@ export default function DetailScreen() {
   );
 
   const renderMedsModule = () => {
-    const groups = [
-      ['Active Medications', sortedRecords.filter(r => (r.medStatus || 'active') === 'active')],
-      ['PRN Medications', sortedRecords.filter(r => r.medStatus === 'prn')],
-      ['Discontinued Medications', sortedRecords.filter(r => r.medStatus === 'discontinued')],
-    ];
+    const activeMeds = sortedRecords.filter(r => (r.medStatus || 'active') === 'active');
+    const discontinuedMeds = sortedRecords.filter(r => (r.medStatus || 'active') === 'discontinued');
+    const adminLogs = records.filter(r => r.type === 'med_admin').sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
 
     return (
-      <>
-        {groups.map(([label, list]: any) => (
-          <div key={label} style={{ marginBottom: '14px' }}>
-            <div className="section-label">{label}</div>
-            {list.length === 0 ? <div className="empty-text">No entries</div> : list.map((r: any) => (
-              <div key={r.id} className="history-item">
-                <div className="history-value">{r.name || 'Medication'} | {r.doseAmount ? `${r.doseAmount} ${r.doseUnit || 'mg'}` : (r.dose || '-')} {r.route ? `via ${r.route}` : ''} | {r.freq || '-'}</div>
-                <div className="history-time">Last administered: {r.lastAdministered ? new Date(r.lastAdministered).toLocaleString() : '-'}</div>
-                <div className="history-time">Status: {(r.medStatus || 'active').toUpperCase()} | {r.by || 'N/A'}</div>
-                {recordActions(r)}
-              </div>
-            ))}
+      <div className="history-list">
+        <div className="section-label">Active Medications</div>
+        {activeMeds.length === 0 ? <div className="empty-state">No active medications</div> : activeMeds.map(r => (
+          <div key={r.id} className="history-item" style={{ borderLeftColor: 'var(--success)' }}>
+            <div className="history-value" style={{ fontWeight: 700 }}>{r.name || 'Medication'}</div>
+            <div className="history-time">{r.doseAmount ? `${r.doseAmount}${r.doseUnit || 'mg'}` : (r.dose || '-')} | {r.route || '-'} | {r.freq || '-'}</div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+              <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.75rem' }} onClick={() => {
+                setEditingRecord({ type: 'med_admin', name: `${r.name} ${r.doseAmount || ''}${r.doseUnit || ''}`, ts: new Date().toISOString().slice(0, 16) });
+                setShowModal(true);
+              }}>💉 Administer Dose</button>
+              {recordActions(r)}
+            </div>
           </div>
         ))}
-      </>
+
+        {discontinuedMeds.length > 0 && (
+          <>
+            <div className="section-label">Discontinued</div>
+            {discontinuedMeds.map(r => (
+              <div key={r.id} className="history-item" style={{ opacity: 0.7 }}>
+                <div className="history-value">{r.name} | {r.doseAmount || r.dose}</div>
+                <div className="history-time">Discontinued by: {r.by || 'N/A'}</div>
+                <div style={{ marginTop: '8px' }}>{recordActions(r)}</div>
+              </div>
+            ))}
+          </>
+        )}
+
+        <div className="section-label" style={{ marginTop: '20px' }}>Administration History / Log</div>
+        {adminLogs.length === 0 ? <div className="empty-state">No administrations logged yet.</div> : adminLogs.map(r => (
+          <div key={r.id} className="history-item" style={{ borderLeft: '3px solid var(--accent)', backgroundColor: 'var(--surface2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div className="history-value" style={{ fontSize: '0.85rem' }}>✅ {r.name} administered</div>
+                <div className="history-time">Time: {new Date(r.ts).toLocaleString()}</div>
+                {r.notes && <div className="history-time" style={{ fontStyle: 'italic', marginTop: '4px' }}>Note: {r.notes}</div>}
+                <div className="history-time">By: {r.by || 'N/A'}</div>
+              </div>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button className="delete-btn" style={{ padding: '4px 8px' }} onClick={() => handleDelete(r.id)}>×</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     );
   };
 
