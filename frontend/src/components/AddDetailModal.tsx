@@ -23,7 +23,8 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
         await api.put(`/records/${type}_${patientId}/${record.id}`, formData);
         showToast('Record updated successfully');
       } else {
-        await api.post(`/records/${type}_${patientId}`, formData);
+        const payload = type === 'meds' ? { ...formData, type: 'med', medStatus: formData.medStatus || 'Active' } : formData;
+        await api.post(`/records/${type}_${patientId}`, payload);
         showToast('Record saved successfully');
       }
       clearCache(`/records/${type}_${patientId}`);
@@ -361,13 +362,23 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
               </select>
             </div>
             <div className="form-group"><label>Status</label>
-              <select name="medStatus" value={formData.medStatus || 'active'} onChange={handleChange}>
-                <option value="active">Active</option>
-                <option value="discontinued">Discontinued</option>
+              <select name="medStatus" value={formData.medStatus || 'Active'} onChange={handleChange}>
+                <option value="Active">Active</option>
+                <option value="Discontinued">Discontinued</option>
               </select>
             </div>
           </div>
           <div className="form-group"><label>Last Administered Time</label><input type="datetime-local" name="lastAdministered" value={formData.lastAdministered ? new Date(formData.lastAdministered).toISOString().slice(0, 16) : ''} onChange={handleChange} /></div>
+        </>
+      );
+    }
+    if (type === 'med_admin') {
+      return (
+        <>
+          <div className="form-group"><label>Medication Name</label><input type="text" name="name" value={formData.name || ''} readOnly style={{ backgroundColor: '#f5f5f5' }} /></div>
+          <div className="form-group"><label>Administration Time</label><input type="datetime-local" name="ts" value={formData.ts ? (formData.ts.length > 16 ? new Date(formData.ts).toISOString().slice(0, 16) : formData.ts) : ''} onChange={handleChange} /></div>
+          <div className="form-group"><label>Administered by</label><input type="text" name="by" value={formData.by || ''} onChange={handleChange} /></div>
+          <div className="form-group"><label>Notes/Observations</label><textarea name="notes" value={formData.notes || ''} onChange={handleChange} rows={2} placeholder="e.g. Patient tolerated well"></textarea></div>
         </>
       );
     }
