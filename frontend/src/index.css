@@ -228,8 +228,7 @@
     letter-spacing: 0.4px;
     text-transform: uppercase;
   }
-  .patient-type-post-cs { background: #EFE3FF; color: #6A1B9A; }
-  .patient-type-nsvd { background: #DDEEFF; color: #0D47A1; }
+  .patient-type-ob { background: #EFE3FF; color: #6A1B9A; }
   .patient-type-gyne { background: #DDF6E8; color: #1B5E20; }
   .schedule-badge,
   .due-badge {
@@ -944,4 +943,46 @@
     .patient-hero-tags {
       justify-content: flex-start;
     }
+  }
+  /* ─── URGENT NOTIFICATIONS ─── */
+  .urgent-notification-panel {
+    background: linear-gradient(135deg, #B71C1C 0%, #E84855 100%);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: 0 8px 32px rgba(183, 28, 28, 0.25);
+    animation: slideInDown 0.4s ease-out;
+  }
+  .notification-item {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .notification-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateX(4px);
+  }
+  .pulse-icon {
+    display: inline-block;
+    animation: pulse-ring 1.5s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+  }
+  .pulse-danger {
+    animation: danger-glow 1.5s infinite;
+  }
+  @keyframes danger-glow {
+    0% { text-shadow: 0 0 0px rgba(232, 72, 85, 0); }
+    50% { text-shadow: 0 0 10px rgba(232, 72, 85, 0.6); }
+    100% { text-shadow: 0 0 0px rgba(232, 72, 85, 0); }
+  }
+  @keyframes slideInDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }

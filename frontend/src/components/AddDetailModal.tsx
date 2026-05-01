@@ -102,7 +102,7 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
               </div>
             </div>
           )}
-          <div className="form-group"><label>Result Preview (Optional)</label><input type="text" name="result" value={formData.result || ''} onChange={handleChange} /></div>
+
         </>
       );
     }
@@ -261,6 +261,7 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
     if (type === 'io') {
       return (
         <>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1565C0', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📈 Intake</div>
           <div className="form-row">
             <div className="form-group"><label>Shift</label>
               <select name="shift" value={formData.shift || 'AM'} onChange={handleChange}>
@@ -269,16 +270,21 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
             </div>
             <div className="form-group"><label>Oral Fluids (mL)</label><input type="number" name="oralFluids" value={formData.oralFluids || ''} onChange={handleChange} /></div>
           </div>
+          <div className="form-group"><label>IVF Total (mL)</label><input type="number" name="ivfTotal" value={formData.ivfTotal || ''} onChange={handleChange} /></div>
+          
+          <hr style={{ border: '0', borderTop: '1px solid #eee', margin: '15px 0' }} />
+          
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#E65100', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📉 Output</div>
           <div className="form-row">
-            <div className="form-group"><label>IVF Total (mL)</label><input type="number" name="ivfTotal" value={formData.ivfTotal || ''} onChange={handleChange} /></div>
             <div className="form-group"><label>Urine Amount (mL)</label><input type="number" name="urineAmount" value={formData.urineAmount || ''} onChange={handleChange} /></div>
-          </div>
-          <div className="form-row">
             <div className="form-group"><label>Urine Frequency</label><input type="number" name="urineFrequency" value={formData.urineFrequency || ''} onChange={handleChange} /></div>
-            <div className="form-group"><label>Stool Frequency</label><input type="number" name="stoolFrequency" value={formData.stoolFrequency || ''} onChange={handleChange} /></div>
           </div>
-          <div className="form-group"><label>Notes</label>
-            <textarea name="notes" value={formData.notes || ''} onChange={handleChange} rows={2}></textarea>
+          <div className="form-group"><label>Stool Frequency</label><input type="number" name="stoolFrequency" value={formData.stoolFrequency || ''} onChange={handleChange} /></div>
+          
+          <hr style={{ border: '0', borderTop: '1px solid #eee', margin: '15px 0' }} />
+          
+          <div className="form-group"><label>Clinical Notes</label>
+            <textarea name="notes" value={formData.notes || ''} onChange={handleChange} rows={2} placeholder="Any relevant clinical observations..."></textarea>
           </div>
         </>
       );
@@ -288,16 +294,67 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
         <>
           <div className="form-group"><label>Medication</label><input type="text" name="name" value={formData.name || ''} onChange={handleChange} /></div>
           <div className="form-row">
-            <div className="form-group"><label>Dose</label><input type="text" name="dose" value={formData.dose || ''} onChange={handleChange} placeholder="e.g. 500 mg" /></div>
-            <div className="form-group"><label>Route</label><input type="text" name="route" value={formData.route || ''} onChange={handleChange} placeholder="e.g. PO, IV" /></div>
+            <div className="form-group">
+              <label>Dose</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  name="doseAmount" 
+                  value={formData.doseAmount || ''} 
+                  onChange={handleChange} 
+                  placeholder="e.g. 500" 
+                  style={{ flex: 1 }}
+                />
+                <select 
+                  name="doseUnit" 
+                  value={formData.doseUnit || 'mg'} 
+                  onChange={handleChange}
+                  style={{ width: 'auto', flexShrink: 0 }}
+                >
+                  <option value="mg">mg</option>
+                  <option value="mcg">mcg</option>
+                  <option value="mL">mL</option>
+                  <option value="g">g</option>
+                  <option value="units">units</option>
+                  <option value="tabs">tabs</option>
+                  <option value="caps">caps</option>
+                  <option value="mEq">mEq</option>
+                </select>
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Route</label>
+              <select name="route" value={formData.route || ''} onChange={handleChange}>
+                <option value="">Select Route</option>
+                <option value="PO">PO (Oral)</option>
+                <option value="SUBL">SUBL (Sublingual)</option>
+                <option value="IV">IV (Intravenous)</option>
+                <option value="IM">IM (Intramuscular)</option>
+                <option value="ID">ID (Intradermal)</option>
+                <option value="SUBQ">SUBQ (Subcutaneous)</option>
+                <option value="Supp.">Supp. (Suppository)</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
           </div>
           <div className="form-row">
-            <div className="form-group"><label>Frequency</label><input type="text" name="freq" value={formData.freq || ''} onChange={handleChange} placeholder="e.g. q8h" /></div>
+            <div className="form-group">
+              <label>Frequency</label>
+              <select name="freq" value={formData.freq || ''} onChange={handleChange}>
+                <option value="">Select Frequency</option>
+                <option value="OD">OD (Once Daily)</option>
+                <option value="BID">BID (Twice Daily)</option>
+                <option value="TID">TID (Three Times Daily)</option>
+                <option value="QID">QID (Four Times Daily)</option>
+                <option value="PRN">PRN (As Needed)</option>
+                <option value="QHS">QHS (At Bedtime)</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
             <div className="form-group"><label>Status</label>
               <select name="medStatus" value={formData.medStatus || 'active'} onChange={handleChange}>
                 <option value="active">Active</option>
-                <option value="due">Due</option>
-                <option value="prn">PRN</option>
                 <option value="discontinued">Discontinued</option>
               </select>
             </div>
@@ -345,9 +402,36 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
     }
     if (type === 'so') {
       return (
-        <div className="form-group"><label>Subjective / Objective Notes</label>
-          <textarea name="value" value={formData.value || ''} onChange={handleChange} rows={5}></textarea>
-        </div>
+        <>
+          <div className="form-row">
+            <div className="form-group"><label>Order Type</label>
+              <select name="orderType" value={formData.orderType || 'Other'} onChange={handleChange}>
+                <option>Standing Order</option>
+                <option>Blood Transfusion</option>
+                <option>Wound Dressing</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div className="form-group"><label>Status</label>
+              <select name="orderStatus" value={formData.orderStatus || 'Pending'} onChange={handleChange}>
+                <option>Pending</option>
+                <option>Ongoing</option>
+                <option>Completed</option>
+              </select>
+            </div>
+          </div>
+          <div className="form-group"><label>Description</label><textarea name="description" value={formData.description || ''} onChange={handleChange} rows={2} placeholder="e.g. Monitoring or standing order details"></textarea></div>
+          {formData.orderType === 'Blood Transfusion' && (
+            <div className="form-row">
+              <div className="form-group"><label>Units Required</label><input type="number" name="bloodUnitsRequired" value={formData.bloodUnitsRequired || ''} onChange={handleChange} /></div>
+              <div className="form-group"><label>Units Available</label><input type="number" name="bloodUnitsAvailable" value={formData.bloodUnitsAvailable || ''} onChange={handleChange} /></div>
+            </div>
+          )}
+          {formData.orderType === 'Wound Dressing' && (
+            <div className="form-group"><label>Frequency</label><input type="text" name="frequency" value={formData.frequency || ''} onChange={handleChange} placeholder="e.g. Daily, BID" /></div>
+          )}
+          <div className="form-group"><label>Notes</label><textarea name="notes" value={formData.notes || ''} onChange={handleChange} rows={2}></textarea></div>
+        </>
       );
     }
     if (type === 'sbar') {

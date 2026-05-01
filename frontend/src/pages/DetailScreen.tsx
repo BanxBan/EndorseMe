@@ -42,7 +42,6 @@ export default function DetailScreen() {
 
   const buildAlerts = (p: any, bundle: any = relatedRecords) => {
     const latestVitals = latestOf(bundle.vitals);
-    const dueMeds = (bundle.meds || []).filter((m: any) => (m.medStatus || 'active') === 'due');
     const pendingLabs = (bundle.labs || []).filter((l: any) => (l.status || 'pending') === 'pending');
     const removedDocs = (bundle.docs || []).filter((d: any) => d.docStatus === 'removed');
     const alerts: any[] = [];
@@ -53,7 +52,6 @@ export default function DetailScreen() {
     if (latestVitals && (Number(latestVitals.o2sat) < 94 || Number(latestVitals.temp) >= 38 || Number(latestVitals.hr) > 120)) {
       alerts.push({ level: 'urgent', title: 'Abnormal findings', detail: `Latest VS: HR ${latestVitals.hr || '-'}, Temp ${latestVitals.temp || '-'}, O2 ${latestVitals.o2sat || '-'}%.` });
     }
-    if (dueMeds.length) alerts.push({ level: 'warning', title: 'Due medications', detail: `${dueMeds.length} medication(s) marked due.` });
     if (pendingLabs.length) alerts.push({ level: 'warning', title: 'Pending urgent tasks', detail: `${pendingLabs.length} lab task(s) pending.` });
     const activeOrders = (bundle.orders || []).filter((order: any) => (order.orderStatus || 'Pending') !== 'Completed');
     if (activeOrders.length) alerts.push({ level: 'warning', title: 'Important orders pending', detail: `${activeOrders.length} important order(s) need follow-up.` });
@@ -143,7 +141,12 @@ export default function DetailScreen() {
 
   const getSbarSummary = (p: any, record?: any, orders: any[] = [], ivFluids: any[] = []) => {
     const room = p.ward_name ? `${p.ward_name} Bed ${p.bed_number || '-'}` : `Room ${p.room || '-'}`;
-    const patientType = ['Post CS', 'NSVD', 'Gyne'].includes(String(p.patientType || '')) ? p.patientType : String(p.ward_type || '').toLowerCase().includes('ob') ? 'NSVD' : 'Gyne';
+    const patientType = (() => {
+      const type = String(p.patientType || '').trim();
+      if (type === 'Post CS' || type === 'NSVD' || type === 'OB') return 'OB';
+      if (type === 'Gyne') return 'Gyne';
+      return String(p.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne';
+    })();
     const scheduleText = `VS ${p.vitalsSchedule || 'Q4'}, I&O ${p.ioSchedule || 'QShift'}.`;
     const orderText = formatOrdersForSbar(orders);
     const activeIv = ivFluids.filter((iv: any) => (iv.ivStatus || 'ongoing') === 'ongoing' || (iv.ivStatus || 'ongoing') === 'to follow');
@@ -383,7 +386,6 @@ export default function DetailScreen() {
   const renderMedsModule = () => {
     const groups = [
       ['Active Medications', sortedRecords.filter(r => (r.medStatus || 'active') === 'active')],
-      ['Due Medications', sortedRecords.filter(r => r.medStatus === 'due')],
       ['PRN Medications', sortedRecords.filter(r => r.medStatus === 'prn')],
       ['Discontinued Medications', sortedRecords.filter(r => r.medStatus === 'discontinued')],
     ];
@@ -395,7 +397,7 @@ export default function DetailScreen() {
             <div className="section-label">{label}</div>
             {list.length === 0 ? <div className="empty-text">No entries</div> : list.map((r: any) => (
               <div key={r.id} className="history-item">
-                <div className="history-value">{r.name || 'Medication'} | {r.dose || '-'} {r.route ? `via ${r.route}` : ''} | {r.freq || '-'}</div>
+                <div className="history-value">{r.name || 'Medication'} | {r.doseAmount ? `${r.doseAmount} ${r.doseUnit || 'mg'}` : (r.dose || '-')} {r.route ? `via ${r.route}` : ''} | {r.freq || '-'}</div>
                 <div className="history-time">Last administered: {r.lastAdministered ? new Date(r.lastAdministered).toLocaleString() : '-'}</div>
                 <div className="history-time">Status: {(r.medStatus || 'active').toUpperCase()} | {r.by || 'N/A'}</div>
                 {recordActions(r)}
@@ -457,7 +459,7 @@ export default function DetailScreen() {
 
     return (
       <>
-        {patient.patientType === 'Post CS' && (
+        {patient.patientType === 'OB' && (
           <div className="alert-card alert-routine" style={{ marginBottom: '12px' }}>
             <div className="history-value">Post CS reminder</div>
             <div className="history-time">Review wound dressing orders and incision care notes.</div>
@@ -595,7 +597,7 @@ export default function DetailScreen() {
     if (type === 'alerts') return renderAlertsModule();
     if (type === 'vs' || type === 'vitals') return renderVitalsModule();
     if (type === 'io') return renderIoModule();
-    if (type === 'orders') return renderOrdersModule();
+    if (type === 'orders' || type === 'so') return renderOrdersModule();
 
     if (sortedRecords.length === 0) {
       return (
@@ -623,6 +625,21 @@ export default function DetailScreen() {
         </div>
       </div>
       <div className="content">
+        {(() => {
+          const alerts = buildAlerts(patient);
+          const urgentAlerts = alerts.filter((a: any) => a.level === 'urgent');
+          if (urgentAlerts.length === 0) return null;
+          return (
+            <div className="urgent-notification-panel" style={{ marginBottom: '16px', padding: '12px 16px' }}>
+              <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="pulse-icon">⚠️</span> Urgent Attention Required
+              </div>
+              {urgentAlerts.map((a: any, i: number) => (
+                <div key={i} style={{ color: '#fff', fontSize: '0.8rem', opacity: 0.95 }}>• {a.title}: {a.detail}</div>
+              ))}
+            </div>
+          );
+        })()}
         {renderModuleContent()}
       </div>
       <button className="fab" onClick={() => {

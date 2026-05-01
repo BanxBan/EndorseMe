@@ -22,10 +22,11 @@ export default function PatientProfile() {
   const patientCategory = String(patient?.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne';
   const patientType = (() => {
     const type = String(patient?.patientType || '').trim();
-    if (type === 'Post CS' || type === 'NSVD' || type === 'Gyne') return type;
-    return patientCategory === 'OB' ? 'NSVD' : 'Gyne';
+    if (type === 'Post CS' || type === 'NSVD' || type === 'OB') return 'OB';
+    if (type === 'Gyne') return 'Gyne';
+    return patientCategory === 'OB' ? 'OB' : 'Gyne';
   })();
-  const patientTypeBadgeClass = patientType === 'Post CS' ? 'patient-type-post-cs' : patientType === 'NSVD' ? 'patient-type-nsvd' : 'patient-type-gyne';
+  const patientTypeBadgeClass = patientType === 'OB' ? 'patient-type-ob' : 'patient-type-gyne';
   const vitalsSchedule = patient?.vitalsSchedule || 'Q4';
   const ioSchedule = patient?.ioSchedule || 'QShift';
   const hasAllergy = patient?.allergy && String(patient.allergy).trim().toUpperCase() !== 'NKDA';
@@ -186,7 +187,7 @@ export default function PatientProfile() {
             <div className="icon-tile-label">SO</div>
           </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/attachments`)}>
-            <span className="icon-tile-emoji">DOC</span>
+            <span className="icon-tile-emoji">📂</span>
             <div className="icon-tile-label">Attachments</div>
           </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/alerts`)}>

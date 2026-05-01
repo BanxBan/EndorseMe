@@ -62,13 +62,13 @@ export default function Dashboard() {
 
   const getPatientType = (patient: any) => {
     const type = String(patient.patientType || '').trim();
-    if (type === 'Post CS' || type === 'NSVD' || type === 'Gyne') return type;
-    return String(patient.ward_type || '').toLowerCase().includes('ob') ? 'NSVD' : 'Gyne';
+    if (type === 'Post CS' || type === 'NSVD' || type === 'OB') return 'OB';
+    if (type === 'Gyne') return 'Gyne';
+    return String(patient.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne';
   };
 
   const getPatientTypeBadgeClass = (type: string) => {
-    if (type === 'Post CS') return 'patient-type-post-cs';
-    if (type === 'NSVD') return 'patient-type-nsvd';
+    if (type === 'OB') return 'patient-type-ob';
     return 'patient-type-gyne';
   };
 
@@ -78,19 +78,18 @@ export default function Dashboard() {
     if (filterMode === 'ADMITTED') return normalizedStatus === 'admitted';
     if (filterMode === 'FOR_BILLING') return normalizedStatus === 'for billing';
     if (filterMode === 'FOR_DISCHARGE') return normalizedStatus === 'for discharge';
-    if (filterMode === 'POST_CS') return getPatientType(p) === 'Post CS';
-    if (filterMode === 'NSVD') return getPatientType(p) === 'NSVD';
+    if (filterMode === 'OB') return getPatientType(p) === 'OB';
     if (filterMode === 'GYNE') return getPatientType(p) === 'Gyne';
     return true;
   });
 
   const nurseName = localStorage.getItem('username') || 'Nurse';
-  const postCsCount = patients.filter(p => getPatientType(p) === 'Post CS').length;
-  const nsvdCount = patients.filter(p => getPatientType(p) === 'NSVD').length;
+  const obCount = patients.filter(p => getPatientType(p) === 'OB').length;
   const gyneCount = patients.filter(p => getPatientType(p) === 'Gyne').length;
   const pendingMeds = patients.filter(p => normalizeStatus(p.status) !== 'admitted').length;
   const pendingLabsOrProcedures = patients.filter(p => normalizeStatus(p.status) === 'for billing').length;
-  const urgentAlerts = patients.filter(p => normalizeStatus(p.status) === 'for discharge').length;
+  const urgentPatients = patients.filter(p => normalizeStatus(p.status) === 'for discharge');
+  const urgentAlertsCount = urgentPatients.length;
 
   const handleEndorsePatient = () => {
     if (filteredPatients.length === 0) {
@@ -143,7 +142,7 @@ export default function Dashboard() {
                 <div style={{ fontSize: '1.4rem', backgroundColor: 'rgba(106, 27, 154, 0.1)', color: '#6A1B9A', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🤰</div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>OB</div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#04364A' }}>{postCsCount + nsvdCount}</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#04364A' }}>{obCount}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -160,12 +159,32 @@ export default function Dashboard() {
             <div className="home-title" style={{ marginBottom: '10px' }}>Notifications</div>
             <div className="info-row"><span className="info-key">New endorsements</span><span className="info-val">{patients.length > 0 ? patients.length : 0}</span></div>
             <div className="info-row"><span className="info-key">Pending acknowledgments</span><span className="info-val">{pendingLabsOrProcedures}</span></div>
-            <div className="info-row"><span className="info-key">Urgent alerts</span><span className="info-val">{urgentAlerts}</span></div>
+            <div className="info-row">
+              <span className="info-key">Urgent alerts</span>
+              <span className={`info-val ${urgentAlertsCount > 0 ? 'pulse-danger' : ''}`} style={urgentAlertsCount > 0 ? { color: 'var(--danger)', fontWeight: 800 } : {}}>
+                {urgentAlertsCount}
+              </span>
+            </div>
           </div>
 
         </div>
 
         <div className="dashboard-main">
+        {urgentAlertsCount > 0 && (
+          <div className="urgent-notification-panel" style={{ marginBottom: '20px' }}>
+            <div className="home-title" style={{ color: '#fff', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="pulse-icon">🔔</span> Urgent Patient Notifications
+            </div>
+            <div style={{ marginTop: '10px', display: 'grid', gap: '8px' }}>
+              {urgentPatients.map(p => (
+                <div key={p.id} className="notification-item" onClick={() => navigate(`/patient/${p.id}`)}>
+                  <div style={{ fontWeight: 700 }}>{p.fname} {p.lname}</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>Critical Status: {p.diag || 'Needs immediate attention'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div id="patient-list">
           <div className="home-title">My Patients</div>
           <div className="home-date">{new Date().toLocaleDateString('en-PH', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</div>
@@ -215,8 +234,7 @@ export default function Dashboard() {
           <button className={`shift-btn ${filterMode === 'ADMITTED' ? 'active' : ''}`} onClick={() => setFilterMode('ADMITTED')}>Admitted</button>
           <button className={`shift-btn ${filterMode === 'FOR_BILLING' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_BILLING')}>For Billing</button>
           <button className={`shift-btn ${filterMode === 'FOR_DISCHARGE' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_DISCHARGE')}>For Discharge</button>
-          <button className={`shift-btn ${filterMode === 'POST_CS' ? 'active' : ''}`} onClick={() => setFilterMode('POST_CS')}>Post CS</button>
-          <button className={`shift-btn ${filterMode === 'NSVD' ? 'active' : ''}`} onClick={() => setFilterMode('NSVD')}>NSVD</button>
+          <button className={`shift-btn ${filterMode === 'OB' ? 'active' : ''}`} onClick={() => setFilterMode('OB')}>OB</button>
           <button className={`shift-btn ${filterMode === 'GYNE' ? 'active' : ''}`} onClick={() => setFilterMode('GYNE')}>Gyne</button>
         </div>
 

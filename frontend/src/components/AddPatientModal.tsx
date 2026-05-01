@@ -15,7 +15,7 @@ const WARDS = [
 ];
 
 const BEDS = ['1', '2', '3', '4', '5', '6'];
-const OB_PATIENT_TYPES = ['Post CS', 'NSVD'];
+const OB_PATIENT_TYPES = ['OB'];
 const VITALS_SCHEDULES = ['Q4', 'Q6', 'Q8', 'QShift'];
 const IO_SCHEDULES = ['QShift', 'Q8', 'Q12', 'Q24'];
 
@@ -44,7 +44,7 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
     age: patient?.age || '',
     sex: patient?.sex || 'Male',
     patientCategory: patient?.patientType === 'Gyne' ? 'Gyne' : 'OB',
-    patientType: patient?.patientType || 'Gyne',
+    patientType: patient?.patientType || 'OB',
     vitalsSchedule: patient?.vitalsSchedule || 'Q4',
     ioSchedule: patient?.ioSchedule || 'QShift',
     importantOrders: patient?.importantOrders || [],
@@ -343,7 +343,7 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
                 setFormData({
                   ...formData,
                   patientCategory: e.target.value,
-                  patientType: e.target.value === 'OB' ? 'NSVD' : 'Gyne'
+                  patientType: e.target.value === 'OB' ? 'OB' : 'Gyne'
                 });
               }} style={{ fontSize: '0.9rem', padding: '10px' }}>
                 <option value="OB">OB</option>
