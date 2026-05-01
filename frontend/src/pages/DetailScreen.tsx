@@ -15,11 +15,9 @@ const detailMeta: any = {
   meds: { title: 'Medications', key: 'meds' },
   med_admin: { title: 'Medication Administration Log', key: 'med_admin' },
   attachments: { title: 'Attachments & Documents', key: 'docs' },
-  so: { title: 'SO Notes', key: 'so' },
+  so: { title: 'SO & Important Orders', key: 'so' },
   status: { title: 'Current Status', key: 'status' },
   sbar: { title: 'SBAR Summary', key: 'sbar' },
-  alerts: { title: 'Alerts & Priority', key: 'alerts' },
-  orders: { title: 'Important Orders', key: 'orders' },
 };
 
 const sortRecords = (records: any[]) =>
@@ -342,10 +340,10 @@ export default function DetailScreen() {
           <div className="current-card">
             <div className="current-label">Latest Vital Signs</div>
             <div className="vitals-grid">
-              <div className="vital-box"><div className="vital-label">BP</div><div className="vital-value">{latest.bp || '-'}</div></div>
-              <div className="vital-box"><div className="vital-label">HR</div><div className="vital-value">{latest.hr || '-'}</div></div>
-              <div className="vital-box"><div className="vital-label">RR</div><div className="vital-value">{latest.rr || '-'}</div></div>
-              <div className="vital-box"><div className="vital-label">Temp</div><div className="vital-value">{latest.temp || '-'}</div></div>
+              <div className="vital-box"><div className="vital-label">BP</div><div className="vital-value">{latest.bp ? `${latest.bp} mmHg` : '-'}</div></div>
+              <div className="vital-box"><div className="vital-label">HR</div><div className="vital-value">{latest.hr ? `${latest.hr} bpm` : '-'}</div></div>
+              <div className="vital-box"><div className="vital-label">RR</div><div className="vital-value">{latest.rr ? `${latest.rr} cpm` : '-'}</div></div>
+              <div className="vital-box"><div className="vital-label">Temp</div><div className="vital-value">{latest.temp ? `${latest.temp} °C` : '-'}</div></div>
               <div className="vital-box"><div className="vital-label">O2 Sat</div><div className="vital-value">{latest.o2sat ? `${latest.o2sat}%` : '-'}</div></div>
             </div>
             <div className="current-meta">{new Date(latest.ts).toLocaleString()} | {latest.by || 'N/A'}</div>
@@ -356,7 +354,7 @@ export default function DetailScreen() {
           <div className="history-list">
             {trend.map(r => (
               <div key={r.id} className="history-item">
-                <div className="history-value">BP {r.bp || '-'} | HR {r.hr || '-'} | RR {r.rr || '-'} | Temp {r.temp || '-'} | O2 {r.o2sat ? `${r.o2sat}%` : '-'}</div>
+                <div className="history-value">BP {r.bp ? `${r.bp} mmHg` : '-'} | HR {r.hr ? `${r.hr} bpm` : '-'} | RR {r.rr ? `${r.rr} cpm` : '-'} | Temp {r.temp ? `${r.temp} °C` : '-'} | O2 {r.o2sat ? `${r.o2sat}%` : '-'}</div>
                 <div className="history-time">{new Date(r.ts).toLocaleString()} | {r.by || 'N/A'}</div>
                 {recordActions(r)}
               </div>
@@ -642,7 +640,7 @@ export default function DetailScreen() {
     if (type === 'alerts') return renderAlertsModule();
     if (type === 'vs' || type === 'vitals') return renderVitalsModule();
     if (type === 'io') return renderIoModule();
-    if (type === 'orders' || type === 'so') return renderOrdersModule();
+    if (type === 'so' || type === 'orders') return renderOrdersModule();
 
     if (sortedRecords.length === 0) {
       return (
@@ -666,10 +664,16 @@ export default function DetailScreen() {
         <button className="back-btn" onClick={() => navigate(`/patient/${id}`)}>←</button>
         <div>
           <div className="topbar-logo">{meta.title}</div>
-          <div className="topbar-subtitle">{patient.fname} {patient.lname} | Rm {patient.room} · {localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse'}</div>
+          <div className="topbar-subtitle">{patient.fname} {patient.lname} | Rm {patient.room} · {(() => {
+            const n = localStorage.getItem('nurseName');
+            return (n && !n.includes('@')) ? n : 'Nurse';
+          })()}</div>
         </div>
         <div className="topbar-right">
-          <span style={{ fontSize: '0.7rem', fontWeight: 600, opacity: 0.9 }}>{localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse'}</span>
+          <span style={{ fontSize: '0.7rem', fontWeight: 600, opacity: 0.9 }}>{(() => {
+            const n = localStorage.getItem('nurseName');
+            return (n && !n.includes('@')) ? n : 'Nurse';
+          })()}</span>
         </div>
       </div>
       <div className="content">

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiWithCache, clearCache } from '../api';
 import AddPatientModal from '../components/AddPatientModal';
- 
+
 const getCurrentShift = () => {
   const hour = new Date().getHours();
   if (hour >= 6 && hour < 14) return 'AM';
@@ -36,7 +36,7 @@ export default function Dashboard() {
   // Preload data when component mounts
   useEffect(() => {
     // Warm up the cache
-    apiWithCache.get('/patients').catch(() => {});
+    apiWithCache.get('/patients').catch(() => { });
   }, []);
 
   const handleLogout = () => {
@@ -91,13 +91,33 @@ export default function Dashboard() {
     return true;
   });
 
-  const nurseName = localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse';
+  const storedName = localStorage.getItem('nurseName');
+  const nurseName = (storedName && !storedName.includes('@')) ? storedName : 'Nurse';
   const obCount = patients.filter(p => getPatientType(p) === 'OB').length;
   const gyneCount = patients.filter(p => getPatientType(p) === 'Gyne').length;
   const pendingMeds = patients.filter(p => normalizeStatus(p.status) !== 'admitted').length;
   const pendingLabsOrProcedures = patients.filter(p => normalizeStatus(p.status) === 'for billing').length;
-  const urgentPatients = patients.filter(p => normalizeStatus(p.status) === 'for discharge');
-  const urgentAlertsCount = urgentPatients.length;
+  const urgentNotifications = patients.flatMap(p => {
+    const notifications = [];
+    const status = normalizeStatus(p.status);
+    if (status === 'for discharge') {
+      notifications.push({ id: `${p.id}-critical`, patient: p, type: 'critical', msg: 'Critical Status - Immediate attention', icon: '🔴', target: `/patient/${p.id}` });
+    }
+    if (status === 'for billing') {
+      notifications.push({ id: `${p.id}-labs`, patient: p, type: 'labs', msg: 'Pending labs/procedures', icon: '🧪', target: `/patient/${p.id}/labs` });
+    }
+    if (status !== 'admitted') {
+      notifications.push({ id: `${p.id}-meds`, patient: p, type: 'meds', msg: 'Due medications', icon: '💊', target: `/patient/${p.id}/meds` });
+    }
+    // If patient was added in the last 12 hours
+    const patientTs = Number(p.id);
+    if (!isNaN(patientTs) && (Date.now() - patientTs < 12 * 60 * 60 * 1000)) {
+      notifications.push({ id: `${p.id}-new`, patient: p, type: 'new', msg: 'New Endorsement - Review profile', icon: '🆕', target: `/patient/${p.id}` });
+    }
+    return notifications;
+  });
+  const urgentAlertsCount = urgentNotifications.length;
+  const newEndorsementsCount = urgentNotifications.filter(n => n.type === 'new').length;
 
   const handleEndorsePatient = () => {
     if (filteredPatients.length === 0) {
@@ -163,12 +183,11 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
             <div className="home-title" style={{ marginBottom: '10px' }}>Notifications</div>
             <div className="info-row" onClick={() => { setFilterMode('ALL'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
               <span className="info-key">New endorsements</span>
-              <span className="info-val">{patients.length > 0 ? patients.length : 0}</span>
+              <span className="info-val">{newEndorsementsCount}</span>
             </div>
             <div className="info-row" onClick={() => { setFilterMode('FOR_BILLING'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
               <span className="info-key">Pending acknowledgments</span>
@@ -185,121 +204,123 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-main">
-        {urgentAlertsCount > 0 && (
-          <div className="urgent-notification-panel" style={{ marginBottom: '20px' }}>
-            <div className="home-title" style={{ color: '#fff', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="pulse-icon">🔔</span> Urgent Patient Notifications
+          {urgentAlertsCount > 0 && (
+            <div className="urgent-notification-panel" style={{ marginBottom: '20px' }}>
+              <div className="home-title" style={{ color: '#fff', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="pulse-icon">🔔</span> Urgent Tasks & Notifications
+              </div>
+              <div style={{ marginTop: '10px', display: 'grid', gap: '8px' }}>
+                {urgentNotifications.map(n => (
+                  <div key={n.id} className="notification-item" onClick={() => navigate(n.target)}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 700 }}>{n.patient.fname} {n.patient.lname}</div>
+                      <span style={{ fontSize: '1.1rem' }}>{n.icon}</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>{n.msg}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{ marginTop: '10px', display: 'grid', gap: '8px' }}>
-              {urgentPatients.map(p => (
-                <div key={p.id} className="notification-item" onClick={() => navigate(`/patient/${p.id}`)}>
-                  <div style={{ fontWeight: 700 }}>{p.fname} {p.lname}</div>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>Critical Status: {p.diag || 'Needs immediate attention'}</div>
+          )}
+          <div id="patient-list">
+            <div className="home-title">My Patients</div>
+            <div className="home-date">{new Date().toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          </div>
+
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <div className="home-title" style={{ marginBottom: '10px' }}>Quick Actions</div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>Add Patient</button>
+              <button className="btn btn-accent" onClick={handleEndorsePatient}>Endorse Patient</button>
+              <button className="btn btn-ghost" onClick={scrollToPatientList}>View Patient List</button>
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <div className="home-title" style={{ marginBottom: '10px' }}>Task Summary</div>
+            <div className="info-row" onClick={() => { setFilterMode('FOR_BILLING'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+              <span className="info-key">Pending labs/procedures</span>
+              <span className="info-val">{pendingLabsOrProcedures}</span>
+            </div>
+            <div className="info-row" onClick={() => { setFilterMode('PENDING_MEDS'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+              <span className="info-key">Pending meds</span>
+              <span className="info-val">{pendingMeds}</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
+            <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ fontSize: '1.8rem', backgroundColor: 'rgba(23, 107, 135, 0.1)', color: '#176B87', width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👥</div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Patients</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#04364A' }}>{patients.length}</div>
+              </div>
+            </div>
+            <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ fontSize: '1.8rem', backgroundColor: 'rgba(237, 108, 2, 0.1)', color: '#ed6c02', width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔶</div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>For Billing</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#ed6c02' }}>{patients.filter(p => normalizeStatus(p.status) === 'for billing').length}</div>
+              </div>
+            </div>
+            <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ fontSize: '1.8rem', backgroundColor: 'rgba(46, 125, 50, 0.1)', color: '#2e7d32', width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✅</div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Admitted</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#2e7d32' }}>{patients.filter(p => normalizeStatus(p.status) === 'admitted').length}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="shift-filter">
+            <button className={`shift-btn ${filterMode === 'ALL' ? 'active' : ''}`} onClick={() => setFilterMode('ALL')}>All</button>
+            <button className={`shift-btn ${filterMode === 'ADMITTED' ? 'active' : ''}`} onClick={() => setFilterMode('ADMITTED')}>Admitted</button>
+            <button className={`shift-btn ${filterMode === 'FOR_BILLING' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_BILLING')}>For Billing</button>
+            <button className={`shift-btn ${filterMode === 'FOR_DISCHARGE' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_DISCHARGE')}>For Discharge</button>
+            <button className={`shift-btn ${filterMode === 'OB' ? 'active' : ''}`} onClick={() => setFilterMode('OB')}>OB</button>
+            <button className={`shift-btn ${filterMode === 'GYNE' ? 'active' : ''}`} onClick={() => setFilterMode('GYNE')}>Gyne</button>
+          </div>
+
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>Loading...</div>
+                <div style={{ color: '#666' }}>Fetching patient data</div>
+              </div>
+            </div>
+          ) : (
+            <div className="patient-grid">
+              {filteredPatients.map(p => (
+                <div key={p.id} className={`patient-card status-${normalizeStatus(p.status).replace(/\s+/g, '-')}`} onClick={() => navigate(`/patient/${p.id}`)} style={{ cursor: 'pointer' }}>
+                  <div className="patient-room">{p.ward_name ? `${p.ward_name} – Bed ${p.bed_number}` : `Rm ${p.room}`} · {String(p.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne'}</div>
+                  <div className="patient-name">{p.fname} {p.lname}, {p.age} y/o</div>
+                  <div className="patient-diag">{p.diag}</div>
+                  <span className={`patient-type-badge ${getPatientTypeBadgeClass(getPatientType(p))}`}>{getPatientType(p)}</span>
+                  <span className={`patient-status-badge ${getStatusBadgeClass(p.status)}`}>
+                    {normalizeStatus(p.status)}
+                  </span>
+                  <div style={{ marginTop: '6px', fontSize: '0.7rem', fontWeight: 700, color: getPriority(p.status).color }}>
+                    {getPriority(p.status).icon} Priority: {getPriority(p.status).label}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-        <div id="patient-list">
-          <div className="home-title">My Patients</div>
-          <div className="home-date">{new Date().toLocaleDateString('en-PH', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</div>
-        </div>
-
-        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-          <div className="home-title" style={{ marginBottom: '10px' }}>Quick Actions</div>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>Add Patient</button>
-            <button className="btn btn-accent" onClick={handleEndorsePatient}>Endorse Patient</button>
-            <button className="btn btn-ghost" onClick={scrollToPatientList}>View Patient List</button>
-          </div>
-        </div>
-
-        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-          <div className="home-title" style={{ marginBottom: '10px' }}>Task Summary</div>
-          <div className="info-row" onClick={() => { setFilterMode('PENDING_MEDS'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
-            <span className="info-key">Due medications</span>
-            <span className="info-val">{pendingMeds}</span>
-          </div>
-          <div className="info-row" onClick={() => { setFilterMode('FOR_BILLING'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
-            <span className="info-key">Pending labs/procedures</span>
-            <span className="info-val">{pendingLabsOrProcedures}</span>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div style={{ fontSize: '1.8rem', backgroundColor: 'rgba(23, 107, 135, 0.1)', color: '#176B87', width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👥</div>
-            <div>
-              <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Patients</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#04364A' }}>{patients.length}</div>
+          )}
+          {!loading && filteredPatients.length === 0 && (
+            <div className="no-results">
+              No patients found. Add a patient to get started.
             </div>
-          </div>
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div style={{ fontSize: '1.8rem', backgroundColor: 'rgba(237, 108, 2, 0.1)', color: '#ed6c02', width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔶</div>
-            <div>
-              <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>For Billing</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#ed6c02' }}>{patients.filter(p => normalizeStatus(p.status) === 'for billing').length}</div>
-            </div>
-          </div>
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div style={{ fontSize: '1.8rem', backgroundColor: 'rgba(46, 125, 50, 0.1)', color: '#2e7d32', width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✅</div>
-            <div>
-              <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Admitted</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#2e7d32' }}>{patients.filter(p => normalizeStatus(p.status) === 'admitted').length}</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="shift-filter">
-          <button className={`shift-btn ${filterMode === 'ALL' ? 'active' : ''}`} onClick={() => setFilterMode('ALL')}>All</button>
-          <button className={`shift-btn ${filterMode === 'ADMITTED' ? 'active' : ''}`} onClick={() => setFilterMode('ADMITTED')}>Admitted</button>
-          <button className={`shift-btn ${filterMode === 'FOR_BILLING' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_BILLING')}>For Billing</button>
-          <button className={`shift-btn ${filterMode === 'FOR_DISCHARGE' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_DISCHARGE')}>For Discharge</button>
-          <button className={`shift-btn ${filterMode === 'OB' ? 'active' : ''}`} onClick={() => setFilterMode('OB')}>OB</button>
-          <button className={`shift-btn ${filterMode === 'GYNE' ? 'active' : ''}`} onClick={() => setFilterMode('GYNE')}>Gyne</button>
-          <button className={`shift-btn ${filterMode === 'PENDING_MEDS' ? 'active' : ''}`} onClick={() => setFilterMode('PENDING_MEDS')}>Pending Meds</button>
-        </div>
-
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '10px' }}>Loading...</div>
-              <div style={{ color: '#666' }}>Fetching patient data</div>
-            </div>
-          </div>
-        ) : (
-          <div className="patient-grid">
-            {filteredPatients.map(p => (
-            <div key={p.id} className={`patient-card status-${normalizeStatus(p.status).replace(/\s+/g, '-')}`} onClick={() => navigate(`/patient/${p.id}`)} style={{ cursor: 'pointer' }}>
-              <div className="patient-room">{p.ward_name ? `${p.ward_name} – Bed ${p.bed_number}` : `Rm ${p.room}`} · {String(p.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne'}</div>
-              <div className="patient-name">{p.fname} {p.lname}, {p.age} y/o</div>
-              <div className="patient-diag">{p.diag}</div>
-              <span className={`patient-type-badge ${getPatientTypeBadgeClass(getPatientType(p))}`}>{getPatientType(p)}</span>
-              <span className={`patient-status-badge ${getStatusBadgeClass(p.status)}`}>
-                {normalizeStatus(p.status)}
-              </span>
-              <div style={{ marginTop: '6px', fontSize: '0.7rem', fontWeight: 700, color: getPriority(p.status).color }}>
-                {getPriority(p.status).icon} Priority: {getPriority(p.status).label}
-              </div>
-            </div>
-          ))}
-          </div>
-        )}
-        {!loading && filteredPatients.length === 0 && (
-          <div className="no-results">
-            No patients found. Add a patient to get started.
-          </div>
-        )}
+          )}
         </div>
       </div>
       {showAddModal && (
-        <AddPatientModal 
-          onClose={() => setShowAddModal(false)} 
+        <AddPatientModal
+          onClose={() => setShowAddModal(false)}
           onSave={() => {
             setShowAddModal(false);
             clearCache('/patients');
             fetchPatients();
-          }} 
+          }}
         />
       )}
     </div>

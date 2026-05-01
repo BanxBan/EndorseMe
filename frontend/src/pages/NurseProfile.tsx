@@ -25,7 +25,9 @@ export default function NurseProfile() {
 
   const profile = useMemo(() => {
     const parsed = parseToken(token);
+    const n = localStorage.getItem('nurseName');
     return {
+      name: (n && !n.includes('@')) ? n : 'Nurse',
       email: storedUsername || parsed?.username || 'Not available',
       nurseId: parsed?.id || 'Not available',
       role: 'Nurse',
@@ -44,6 +46,10 @@ export default function NurseProfile() {
       <div className="content">
         <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius)', padding: '20px', boxShadow: 'var(--shadow)' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '10px', textAlign: 'center' }}>👩‍⚕️</div>
+          <div className="info-row">
+            <span className="info-key">Name</span>
+            <span className="info-val">{profile.name}</span>
+          </div>
           <div className="info-row">
             <span className="info-key">Role</span>
             <span className="info-val">{profile.role}</span>

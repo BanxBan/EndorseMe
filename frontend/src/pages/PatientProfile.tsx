@@ -115,7 +115,10 @@ export default function PatientProfile() {
           <div className="topbar-subtitle">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : `Room ${patient.room}`}</div>
         </div>
         <div className="topbar-right" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.7rem', fontWeight: 600, marginRight: '4px', opacity: 0.9 }}>{localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse'}</span>
+          <span style={{ fontSize: '0.7rem', fontWeight: 600, marginRight: '4px', opacity: 0.9 }}>{(() => {
+            const n = localStorage.getItem('nurseName');
+            return (n && !n.includes('@')) ? n : 'Nurse';
+          })()}</span>
           <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '20px' }} onClick={() => setShowEditModal(true)}>✏️ Edit</button>
           <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '20px', color: '#d32f2f' }} onClick={handleDelete}>🗑️ Remove</button>
         </div>
@@ -142,7 +145,10 @@ export default function PatientProfile() {
           <div className="home-title" style={{ marginBottom: '10px' }}>Quick Summary</div>
           <div className="info-row" style={{ backgroundColor: 'rgba(23, 107, 135, 0.05)', borderRadius: '8px', padding: '8px 10px', marginBottom: '12px' }}>
             <span className="info-key">👤 Active Nurse</span>
-            <span className="info-val" style={{ fontWeight: 700, color: '#176B87' }}>{localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse'}</span>
+            <span className="info-val" style={{ fontWeight: 700, color: '#176B87' }}>{(() => {
+              const n = localStorage.getItem('nurseName');
+              return (n && !n.includes('@')) ? n : 'Nurse';
+            })()}</span>
           </div>
           <div className="info-row"><span className="info-key">Room Number</span><span className="info-val">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : patient.room}</span></div>
           <div className="info-row"><span className="info-key">Patient Category</span><span className="info-val">{patientCategory}</span></div>
@@ -161,17 +167,17 @@ export default function PatientProfile() {
         </div>
 
         <div className="icon-grid">
-          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/diet`)}>
-            <span className="icon-tile-emoji">🍎</span>
-            <div className="icon-tile-label">Diet</div>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/ivfluids`)}>
+            <span className="icon-tile-emoji">💧</span>
+            <div className="icon-tile-label">IV Fluids</div>
           </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/labs`)}>
             <span className="icon-tile-emoji">🔬</span>
             <div className="icon-tile-label">Labs</div>
           </div>
-          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/ivfluids`)}>
-            <span className="icon-tile-emoji">💧</span>
-            <div className="icon-tile-label">IV Fluids</div>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/diet`)}>
+            <span className="icon-tile-emoji">🍎</span>
+            <div className="icon-tile-label">Diet</div>
           </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/vitals`)}>
             <span className="icon-tile-emoji">❤️</span>
@@ -187,21 +193,13 @@ export default function PatientProfile() {
             <span className="icon-tile-emoji">💊</span>
             <div className="icon-tile-label">Medications</div>
           </div>
-          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/so`)}>
-            <span className="icon-tile-emoji">📝</span>
-            <div className="icon-tile-label">SO</div>
-          </div>
           <div className="icon-tile" onClick={() => navigate(`/patient/${id}/attachments`)}>
             <span className="icon-tile-emoji">📂</span>
             <div className="icon-tile-label">Attachments</div>
           </div>
-          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/alerts`)}>
-            <span className="icon-tile-emoji">!</span>
-            <div className="icon-tile-label">Alerts</div>
-          </div>
-          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/orders`)}>
-            <span className="icon-tile-emoji">ORD</span>
-            <div className="icon-tile-label">Important Orders</div>
+          <div className="icon-tile" onClick={() => navigate(`/patient/${id}/so`)}>
+            <span className="icon-tile-emoji">📝</span>
+            <div className="icon-tile-label">SO & Important Orders</div>
           </div>
         </div>
 

@@ -19,18 +19,19 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
 
   const handleSave = async () => {
     try {
-      if (record) {
+      if (record?.id) {
         await api.put(`/records/${type}_${patientId}/${record.id}`, formData);
         showToast('Record updated successfully');
       } else {
         await api.post(`/records/${type}_${patientId}`, formData);
-        showToast('Record added successfully');
+        showToast('Record saved successfully');
       }
       clearCache(`/records/${type}_${patientId}`);
       onSave();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to save record');
+    } catch (err: any) {
+      console.error('Save error:', err);
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Unknown error';
+      alert(`Failed to save record: ${msg}`);
     }
   };
 
@@ -254,14 +255,14 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
       return (
         <>
           <div className="form-row">
-            <div className="form-group"><label>BP</label><input type="text" name="bp" value={formData.bp || ''} onChange={handleChange} /></div>
-            <div className="form-group"><label>HR</label><input type="number" name="hr" value={formData.hr || ''} onChange={handleChange} /></div>
+            <div className="form-group"><label>BP (mmHg)</label><input type="text" name="bp" value={formData.bp || ''} onChange={handleChange} /></div>
+            <div className="form-group"><label>HR (bpm)</label><input type="number" name="hr" value={formData.hr || ''} onChange={handleChange} /></div>
           </div>
           <div className="form-row">
-            <div className="form-group"><label>Temp</label><input type="number" step="0.1" name="temp" value={formData.temp || ''} onChange={handleChange} /></div>
-            <div className="form-group"><label>RR</label><input type="number" name="rr" value={formData.rr || ''} onChange={handleChange} /></div>
+            <div className="form-group"><label>Temp (°C)</label><input type="number" step="0.1" name="temp" value={formData.temp || ''} onChange={handleChange} /></div>
+            <div className="form-group"><label>RR (cpm)</label><input type="number" name="rr" value={formData.rr || ''} onChange={handleChange} /></div>
           </div>
-          <div className="form-group"><label>O2 Sat</label><input type="number" name="o2sat" value={formData.o2sat || ''} onChange={handleChange} placeholder="e.g. 98" /></div>
+          <div className="form-group"><label>O2 Sat (%)</label><input type="number" name="o2sat" value={formData.o2sat || ''} onChange={handleChange} placeholder="e.g. 98" /></div>
         </>
       );
     }
@@ -407,7 +408,7 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
         </div>
       );
     }
-    if (type === 'so') {
+    if (type === 'so' || type === 'orders') {
       return (
         <>
           <div className="form-row">
@@ -466,56 +467,6 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
         </>
       );
     }
-    if (type === 'alerts') {
-      return (
-        <>
-          <div className="form-row">
-            <div className="form-group"><label>Alert Title</label><input type="text" name="title" value={formData.title || ''} onChange={handleChange} /></div>
-            <div className="form-group"><label>Level</label>
-              <select name="alertLevel" value={formData.alertLevel || 'warning'} onChange={handleChange}>
-                <option value="routine">Routine</option>
-                <option value="warning">Warning</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
-          </div>
-          <div className="form-group"><label>Details</label><textarea name="detail" value={formData.detail || ''} onChange={handleChange} rows={3}></textarea></div>
-        </>
-      );
-    }
-    if (type === 'orders') {
-      return (
-        <>
-          <div className="form-row">
-            <div className="form-group"><label>Order Type</label>
-              <select name="orderType" value={formData.orderType || 'Other'} onChange={handleChange}>
-                <option>Blood Transfusion</option>
-                <option>Wound Dressing</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div className="form-group"><label>Status</label>
-              <select name="orderStatus" value={formData.orderStatus || 'Pending'} onChange={handleChange}>
-                <option>Pending</option>
-                <option>Ongoing</option>
-                <option>Completed</option>
-              </select>
-            </div>
-          </div>
-          <div className="form-group"><label>Description</label><textarea name="description" value={formData.description || ''} onChange={handleChange} rows={2} placeholder="e.g. Transfuse packed RBC as ordered"></textarea></div>
-          {formData.orderType === 'Blood Transfusion' && (
-            <div className="form-row">
-              <div className="form-group"><label>Units Required</label><input type="number" name="bloodUnitsRequired" value={formData.bloodUnitsRequired || ''} onChange={handleChange} /></div>
-              <div className="form-group"><label>Units Available</label><input type="number" name="bloodUnitsAvailable" value={formData.bloodUnitsAvailable || ''} onChange={handleChange} /></div>
-            </div>
-          )}
-          {formData.orderType === 'Wound Dressing' && (
-            <div className="form-group"><label>Frequency</label><input type="text" name="frequency" value={formData.frequency || ''} onChange={handleChange} placeholder="e.g. Daily, BID" /></div>
-          )}
-          <div className="form-group"><label>Notes</label><textarea name="notes" value={formData.notes || ''} onChange={handleChange} rows={2}></textarea></div>
-        </>
-      );
-    }
     return null;
   };
 
@@ -523,7 +474,7 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
     <div className="modal-overlay open" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="modal" style={{ transform: 'translateY(0)' }}>
         <div className="modal-handle"></div>
-        <div className="modal-title">{record ? 'Edit Entry' : 'Add Entry'}</div>
+        <div className="modal-title">{record?.id ? 'Edit Entry' : 'Add Entry'}</div>
         
         {renderFormFields()}
         
