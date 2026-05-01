@@ -69,7 +69,7 @@ export default function Dashboard() {
 
   const getPatientType = (patient: any) => {
     const type = String(patient.patientType || '').trim();
-    if (type === 'Post CS' || type === 'NSVD' || type === 'OB') return 'OB';
+    if (type === 'CS' || type === 'Post CS' || type === 'NSVD' || type === 'OB') return 'OB';
     if (type === 'Gyne') return 'Gyne';
     return String(patient.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne';
   };

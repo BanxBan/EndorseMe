@@ -22,7 +22,7 @@ const WARDS = [
 ];
 
 const BEDS = ['1', '2', '3', '4', '5', '6'];
-const OB_PATIENT_TYPES = ['OB'];
+const OB_PATIENT_TYPES = ['CS', 'NSVD'];
 const VITALS_SCHEDULES = ['Q4', 'Q6', 'Q8', 'QShift'];
 const IO_SCHEDULES = ['QShift', 'Q8', 'Q12', 'Q24'];
 
