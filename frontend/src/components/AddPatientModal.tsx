@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import api from '../api';
 import { showToast } from '../utils/toast';
 
+const getCurrentShift = () => {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 14) return 'AM';
+  if (hour >= 14 && hour < 22) return 'PM';
+  return 'NOC';
+};
+
 const STANDARD_ROOMS = [
   'RM 201', 'RM 202', 'RM 203', 'RM 204', 'RM 205',
   'RM 206', 'RM 207', 'RM 208', 'RM 209', 'RM 210',
@@ -51,6 +58,7 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
     doctor: patient?.doctor || '',
     diag: patient?.diag || '',
     admit: patient?.admit || today,
+    shift: patient?.shift || getCurrentShift(),
     status: patient?.status || 'admitted',
     allergy: patient?.allergy || ''
   });
@@ -440,6 +448,14 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
             <div className="form-group">
               <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6A1B9A' }}>📅 Date Admitted</label>
               <input type="date" name="admit" value={formData.admit} onChange={handleChange} max={today} style={{ fontSize: '0.9rem', padding: '10px' }} />
+            </div>
+            <div className="form-group">
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6A1B9A' }}>🕒 Admitting Shift</label>
+              <select name="shift" value={formData.shift} onChange={handleChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
+                <option value="AM">AM Shift</option>
+                <option value="PM">PM Shift</option>
+                <option value="NOC">NOC Shift</option>
+              </select>
             </div>
             <div className="form-group">
               <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6A1B9A' }}>📊 Status</label>

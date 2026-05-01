@@ -30,7 +30,13 @@ router.post('/register', async (req, res) => {
     return res.status(409).json({ message: 'Account already exists for this email' });
   }
 
-  const { error } = await supabase.from('users').insert([{ id: randomUUID(), username, passwordHash }]);
+  const { error } = await supabase.from('users').insert([{ 
+    id: randomUUID(), 
+    username, 
+    passwordHash,
+    name: normalizedName,
+    licenseNo: normalizedLicenseNo
+  }]);
   if (error) {
     return res.status(500).json({ message: 'Registration failed', error: error.message });
   }
@@ -56,7 +62,7 @@ router.post('/login', async (req, res) => {
   }
 
   const token = jwt.sign({ username: data.username, id: data.id }, JWT_SECRET, { expiresIn: '24h' });
-  res.json({ token, username: data.username });
+  res.json({ token, username: data.username, name: data.name });
 });
 
 export default router;

@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiWithCache, clearCache } from '../api';
 import AddPatientModal from '../components/AddPatientModal';
+ 
+const getCurrentShift = () => {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 14) return 'AM';
+  if (hour >= 14 && hour < 22) return 'PM';
+  return 'NOC';
+};
 
 export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
@@ -80,10 +87,11 @@ export default function Dashboard() {
     if (filterMode === 'FOR_DISCHARGE') return normalizedStatus === 'for discharge';
     if (filterMode === 'OB') return getPatientType(p) === 'OB';
     if (filterMode === 'GYNE') return getPatientType(p) === 'Gyne';
+    if (filterMode === 'PENDING_MEDS') return normalizeStatus(p.status) !== 'admitted';
     return true;
   });
 
-  const nurseName = localStorage.getItem('username') || 'Nurse';
+  const nurseName = localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse';
   const obCount = patients.filter(p => getPatientType(p) === 'OB').length;
   const gyneCount = patients.filter(p => getPatientType(p) === 'Gyne').length;
   const pendingMeds = patients.filter(p => normalizeStatus(p.status) !== 'admitted').length;
@@ -114,7 +122,8 @@ export default function Dashboard() {
           <div className="topbar-subtitle">Ward Turnover System</div>
         </div>
         <div className="topbar-right">
-          <span className="shift-badge">AM Shift</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, marginRight: '8px', opacity: 0.9 }}>{nurseName}</span>
+          <span className="shift-badge">{getCurrentShift()} Shift</span>
           <button className="back-btn" onClick={() => navigate('/profile')} title="Profile" style={{ marginLeft: '10px', fontSize: '0.9rem' }}>👤</button>
           <button className="back-btn" onClick={handleLogout} title="Logout" style={{ marginLeft: '10px', fontSize: '0.9rem' }}>🚪</button>
         </div>
@@ -124,7 +133,7 @@ export default function Dashboard() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
             <div className="home-title">Nurse Info</div>
             <div className="info-row"><span className="info-key">Name</span><span className="info-val">{nurseName}</span></div>
-            <div className="info-row"><span className="info-key">Shift</span><span className="info-val">AM Shift</span></div>
+            <div className="info-row"><span className="info-key">Shift</span><span className="info-val">{getCurrentShift()} Shift</span></div>
             <div className="info-row"><span className="info-key">Assigned Unit</span><span className="info-val">OB-Gyne</span></div>
           </div>
 
@@ -157,9 +166,15 @@ export default function Dashboard() {
 
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
             <div className="home-title" style={{ marginBottom: '10px' }}>Notifications</div>
-            <div className="info-row"><span className="info-key">New endorsements</span><span className="info-val">{patients.length > 0 ? patients.length : 0}</span></div>
-            <div className="info-row"><span className="info-key">Pending acknowledgments</span><span className="info-val">{pendingLabsOrProcedures}</span></div>
-            <div className="info-row">
+            <div className="info-row" onClick={() => { setFilterMode('ALL'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+              <span className="info-key">New endorsements</span>
+              <span className="info-val">{patients.length > 0 ? patients.length : 0}</span>
+            </div>
+            <div className="info-row" onClick={() => { setFilterMode('FOR_BILLING'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+              <span className="info-key">Pending acknowledgments</span>
+              <span className="info-val">{pendingLabsOrProcedures}</span>
+            </div>
+            <div className="info-row" onClick={() => { setFilterMode('FOR_DISCHARGE'); scrollToPatientList(); }} style={{ cursor: 'pointer', border: urgentAlertsCount > 0 ? '1px solid var(--danger)' : 'none', borderRadius: '8px', padding: '4px 8px' }}>
               <span className="info-key">Urgent alerts</span>
               <span className={`info-val ${urgentAlertsCount > 0 ? 'pulse-danger' : ''}`} style={urgentAlertsCount > 0 ? { color: 'var(--danger)', fontWeight: 800 } : {}}>
                 {urgentAlertsCount}
@@ -201,8 +216,14 @@ export default function Dashboard() {
 
         <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
           <div className="home-title" style={{ marginBottom: '10px' }}>Task Summary</div>
-          <div className="info-row"><span className="info-key">Due medications</span><span className="info-val">{pendingMeds}</span></div>
-          <div className="info-row"><span className="info-key">Pending labs/procedures</span><span className="info-val">{pendingLabsOrProcedures}</span></div>
+          <div className="info-row" onClick={() => { setFilterMode('PENDING_MEDS'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+            <span className="info-key">Due medications</span>
+            <span className="info-val">{pendingMeds}</span>
+          </div>
+          <div className="info-row" onClick={() => { setFilterMode('FOR_BILLING'); scrollToPatientList(); }} style={{ cursor: 'pointer' }}>
+            <span className="info-key">Pending labs/procedures</span>
+            <span className="info-val">{pendingLabsOrProcedures}</span>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
@@ -236,6 +257,7 @@ export default function Dashboard() {
           <button className={`shift-btn ${filterMode === 'FOR_DISCHARGE' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_DISCHARGE')}>For Discharge</button>
           <button className={`shift-btn ${filterMode === 'OB' ? 'active' : ''}`} onClick={() => setFilterMode('OB')}>OB</button>
           <button className={`shift-btn ${filterMode === 'GYNE' ? 'active' : ''}`} onClick={() => setFilterMode('GYNE')}>Gyne</button>
+          <button className={`shift-btn ${filterMode === 'PENDING_MEDS' ? 'active' : ''}`} onClick={() => setFilterMode('PENDING_MEDS')}>Pending Meds</button>
         </div>
 
         {loading ? (

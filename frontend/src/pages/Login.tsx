@@ -14,6 +14,7 @@ export default function Login() {
       const res = await authApi.post('/login', { username: username.trim().toLowerCase(), password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.username);
+      localStorage.setItem('nurseName', res.data.name || res.data.username);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');

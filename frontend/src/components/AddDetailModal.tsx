@@ -3,6 +3,13 @@ import api from '../api';
 import { clearCache } from '../api';
 import { showToast } from '../utils/toast';
 
+const getCurrentShift = () => {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 14) return 'AM';
+  if (hour >= 14 && hour < 22) return 'PM';
+  return 'NOC';
+};
+
 export default function AddDetailModal({ type, patientId, record, onClose, onSave }: { type: string, patientId: string, record?: any, onClose: () => void, onSave: () => void }) {
   const [formData, setFormData] = useState<any>(record || { ts: new Date().toISOString().slice(0, 16) });
 
@@ -264,7 +271,7 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
           <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1565C0', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📈 Intake</div>
           <div className="form-row">
             <div className="form-group"><label>Shift</label>
-              <select name="shift" value={formData.shift || 'AM'} onChange={handleChange}>
+              <select name="shift" value={formData.shift || getCurrentShift()} onChange={handleChange}>
                 <option>AM</option><option>PM</option><option>NOC</option>
               </select>
             </div>

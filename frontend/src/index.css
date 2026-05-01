@@ -986,3 +986,37 @@
     from { transform: translateY(-20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
   }
+
+  /* ─── PRINT STYLES ─── */
+  @media print {
+    .topbar, .fab, .back-btn, .shift-filter, .btn, .endorse-btn-block, .icon-grid, .modal-overlay, .urgent-notification-panel {
+      display: none !important;
+    }
+    .screen, .content {
+      display: block !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: white !important;
+    }
+    .patient-hero, .detail-header, .section-label {
+      display: none !important;
+    }
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    
+    .history-list { display: block !important; }
+    .sbar-section, .sbar-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      border: 1px solid #ccc !important;
+      margin-bottom: 20px !important;
+      box-shadow: none !important;
+      padding: 15px !important;
+      border-radius: 0 !important;
+    }
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+  }
+  .print-only { display: none; }

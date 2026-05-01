@@ -32,6 +32,7 @@ const sumNumbers = (records: any[], key: string) =>
 export default function DetailScreen() {
   const { id, type } = useParams();
   const navigate = useNavigate();
+  const [printMode, setPrintMode] = useState<'none' | 'single' | 'all'>('none');
   const [patient, setPatient] = useState<any>(null);
   const [records, setRecords] = useState<any[]>([]);
   const [relatedRecords, setRelatedRecords] = useState<any>({});
@@ -167,6 +168,14 @@ export default function DetailScreen() {
       by: record?.by || 'No manual SBAR entry',
       ts: record?.ts,
     };
+  };
+
+  const handlePrint = (mode: 'single' | 'all') => {
+    setPrintMode(mode);
+    setTimeout(() => {
+      window.print();
+      setPrintMode('none');
+    }, 100);
   };
 
   const handleSbarAction = (action: string) => {
@@ -539,33 +548,39 @@ export default function DetailScreen() {
     const patientSummary = getSbarSummary(patient, latestRecord, patientOrders, patientIvFluids);
 
     return (
-      <>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
-          <button className="btn btn-primary" onClick={() => handleSbarAction('Print')}>Print SBAR</button>
-          <button className="btn btn-ghost" onClick={() => handleSbarAction('Send')}>Send SBAR</button>
+      <div className={`sbar-module ${printMode !== 'none' ? 'is-printing' : ''}`}>
+        <div className="no-print" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
+          <button className="btn btn-primary" onClick={() => handlePrint('single')}>🖨️ Print This Patient</button>
+          <button className="btn btn-accent" onClick={() => handlePrint('all')}>📄 Print All Patients</button>
+          <button className="btn btn-ghost" onClick={() => handleSbarAction('Send')}>📤 Send SBAR</button>
         </div>
 
-        <div className="section-label">Single Patient SBAR</div>
-        {renderSbarCard(patientSummary, `${patient.fname} ${patient.lname}`, latestRecord)}
+        <div className={`${printMode === 'all' ? 'no-print' : ''}`}>
+          <div className="section-label no-print">Single Patient SBAR</div>
+          {renderSbarCard(patientSummary, `${patient.fname} ${patient.lname}`, latestRecord)}
+        </div>
 
-        {sortedRecords.length > 1 && (
-          <>
+        {sortedRecords.length > 1 && printMode !== 'all' && (
+          <div className="no-print">
             <div className="section-label">Previous Manual Entries</div>
             <div className="history-list">
               {sortedRecords.slice(1).map(r => renderSbarCard(getSbarSummary(patient, r, patientOrders, patientIvFluids), `${patient.fname} ${patient.lname}`, r))}
             </div>
-          </>
+          </div>
         )}
 
-        <div className="section-label">Multiple Patient SBAR Summary</div>
-        <div className="history-list">
-          {allSbarSummaries.map(({ patient: summaryPatient, record, orders, ivFluids: summaryIv }: any) => (
-            <div key={summaryPatient.id}>
-              {renderSbarCard(getSbarSummary(summaryPatient, record, orders || [], summaryIv || []), `${summaryPatient.fname} ${summaryPatient.lname}`, undefined)}
-            </div>
-          ))}
+        <div className={`${printMode === 'single' ? 'no-print' : ''}`}>
+          <div className="section-label no-print">Multiple Patient SBAR Summary</div>
+          <div className="history-list">
+            {allSbarSummaries.map(({ patient: summaryPatient, record, orders, ivFluids: summaryIv }: any, idx: number) => (
+              <div key={summaryPatient.id} className={idx > 0 ? 'page-break' : ''}>
+                <div className="print-only" style={{ marginBottom: '10px', fontSize: '1.2rem', fontWeight: 800 }}>PATIENT ENDORSEMENT: {summaryPatient.fname} {summaryPatient.lname}</div>
+                {renderSbarCard(getSbarSummary(summaryPatient, record, orders || [], summaryIv || []), `${summaryPatient.fname} ${summaryPatient.lname}`, undefined)}
+              </div>
+            ))}
+          </div>
         </div>
-      </>
+      </div>
     );
   };
 
@@ -621,7 +636,10 @@ export default function DetailScreen() {
         <button className="back-btn" onClick={() => navigate(`/patient/${id}`)}>←</button>
         <div>
           <div className="topbar-logo">{meta.title}</div>
-          <div className="topbar-subtitle">{patient.fname} {patient.lname} | Rm {patient.room}</div>
+          <div className="topbar-subtitle">{patient.fname} {patient.lname} | Rm {patient.room} · {localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse'}</div>
+        </div>
+        <div className="topbar-right">
+          <span style={{ fontSize: '0.7rem', fontWeight: 600, opacity: 0.9 }}>{localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse'}</span>
         </div>
       </div>
       <div className="content">

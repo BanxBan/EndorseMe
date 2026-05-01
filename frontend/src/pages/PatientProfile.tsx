@@ -114,7 +114,8 @@ export default function PatientProfile() {
           <div className="topbar-logo" style={{fontSize: '1.2rem'}}>{patient.fname} {patient.lname}</div>
           <div className="topbar-subtitle">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : `Room ${patient.room}`}</div>
         </div>
-        <div className="topbar-right" style={{ display: 'flex', gap: '6px' }}>
+        <div className="topbar-right" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.7rem', fontWeight: 600, marginRight: '4px', opacity: 0.9 }}>{localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse'}</span>
           <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '20px' }} onClick={() => setShowEditModal(true)}>✏️ Edit</button>
           <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '0.75rem', borderRadius: '20px', color: '#d32f2f' }} onClick={handleDelete}>🗑️ Remove</button>
         </div>
@@ -139,6 +140,10 @@ export default function PatientProfile() {
         <div className="profile-layout">
         <div className="panel-card">
           <div className="home-title" style={{ marginBottom: '10px' }}>Quick Summary</div>
+          <div className="info-row" style={{ backgroundColor: 'rgba(23, 107, 135, 0.05)', borderRadius: '8px', padding: '8px 10px', marginBottom: '12px' }}>
+            <span className="info-key">👤 Active Nurse</span>
+            <span className="info-val" style={{ fontWeight: 700, color: '#176B87' }}>{localStorage.getItem('nurseName') || localStorage.getItem('username') || 'Nurse'}</span>
+          </div>
           <div className="info-row"><span className="info-key">Room Number</span><span className="info-val">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : patient.room}</span></div>
           <div className="info-row"><span className="info-key">Patient Category</span><span className="info-val">{patientCategory}</span></div>
           <div className="info-row"><span className="info-key">Patient Type</span><span className="info-val"><span className={`patient-type-badge ${patientTypeBadgeClass}`}>{patientType}</span></span></div>
