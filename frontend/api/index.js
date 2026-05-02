@@ -225,9 +225,17 @@ app.delete('/api/records/:key/:id', async (req, res) => {
   }
 });
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+// Health check / Version
+app.get(['/api/version', '/version', '/health'], (req, res) => {
+  res.json({ 
+    version: '1.1.2-vercel', 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    env: {
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_KEY
+    }
+  });
 });
 
 export default app;
