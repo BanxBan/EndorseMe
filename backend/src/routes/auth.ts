@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
     username, 
     passwordHash,
     name: normalizedName,
-    licenseNo: normalizedLicenseNo
+    license_no: normalizedLicenseNo
   }]);
   if (error) {
     return res.status(500).json({ message: 'Registration failed', error: error.message });
