@@ -247,7 +247,7 @@ app.get('/api/all-records', async (req, res) => {
 // Health check / Version
 app.get(['/api/version', '/version', '/health'], (req, res) => {
   res.json({ 
-    version: '1.1.2-vercel', 
+    version: '1.1.3-vercel', 
     status: 'ok',
     timestamp: new Date().toISOString(),
     env: {
