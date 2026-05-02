@@ -20,7 +20,13 @@ app.use('/', apiRoutes);
 
 // Version check to verify deployment
 app.get('/api/version', (req, res) => {
-  res.json({ version: '1.1.0', status: 'ready' });
+  res.json({ version: '1.1.1', status: 'ready', timestamp: new Date().toISOString() });
+});
+
+// Debug: request logger
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`[DEBUG] ${req.method} ${req.url} - Path: ${req.path}`);
+  next();
 });
 
 // Debug: catch-all to see what Express receives on Vercel
@@ -30,7 +36,7 @@ app.use((req: Request, res: Response) => {
     method: req.method,
     url: req.url,
     path: req.path,
-    msg: 'If you see this JSON, the latest backend code IS deployed.'
+    msg: 'If you see this JSON, version 1.1.1 IS deployed.'
   });
 });
 
