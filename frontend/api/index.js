@@ -225,6 +225,25 @@ app.delete('/api/records/:key/:id', async (req, res) => {
   }
 });
 
+app.get('/api/all-records', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('records').select('*');
+    if (error) return res.status(500).json({ error: error.message });
+    
+    const result = (data || []).map(d => {
+      const keyParts = d.key?.split('_') || [];
+      const patientId = keyParts.pop();
+      const module = keyParts.join('_');
+      return { ...(d.data || {}), id: d.id, patientId, module, key: d.key };
+    });
+    
+    res.json(result);
+  } catch (error) {
+    console.error('All records error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // Health check / Version
 app.get(['/api/version', '/version', '/health'], (req, res) => {
   res.json({ 
