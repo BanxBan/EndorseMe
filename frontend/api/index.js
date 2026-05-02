@@ -65,7 +65,13 @@ app.post('/auth/register', async (req, res) => {
       return res.status(409).json({ message: 'Account already exists for this email' });
     }
 
-    const { error } = await supabase.from('users').insert([{ id: randomUUID(), username, passwordHash }]);
+    const { error } = await supabase.from('users').insert([{ 
+      id: randomUUID(), 
+      username, 
+      passwordHash,
+      name: normalizedName,
+      license_no: normalizedLicenseNo
+    }]);
     if (error) {
       return res.status(500).json({ message: 'Registration failed', error: error.message });
     }
@@ -173,8 +179,8 @@ app.delete('/api/patients/:id', async (req, res) => {
   }
 });
 
-// Records routes (protected)
-app.get('/api/records/:key', authenticateToken, async (req, res) => {
+// Records routes
+app.get('/api/records/:key', async (req, res) => {
   try {
     const { data, error } = await supabase.from('records').select('*').eq('key', req.params.key);
     if (error) return res.status(500).json({ error: error.message });
@@ -185,7 +191,7 @@ app.get('/api/records/:key', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/records/:key', authenticateToken, async (req, res) => {
+app.post('/api/records/:key', async (req, res) => {
   try {
     const newId = Date.now().toString();
     const { data, error } = await supabase.from('records').insert([{ id: newId, key: req.params.key, data: req.body }]).select();
@@ -197,7 +203,7 @@ app.post('/api/records/:key', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/records/:key/:id', authenticateToken, async (req, res) => {
+app.put('/api/records/:key/:id', async (req, res) => {
   try {
     const { data, error } = await supabase.from('records').update({ data: req.body }).eq('id', req.params.id).eq('key', req.params.key).select();
     if (error) return res.status(500).json({ error: error.message });
@@ -208,7 +214,7 @@ app.put('/api/records/:key/:id', authenticateToken, async (req, res) => {
   }
 });
 
-app.delete('/api/records/:key/:id', authenticateToken, async (req, res) => {
+app.delete('/api/records/:key/:id', async (req, res) => {
   try {
     const { error } = await supabase.from('records').delete().eq('id', req.params.id).eq('key', req.params.key);
     if (error) return res.status(500).json({ error: error.message });
