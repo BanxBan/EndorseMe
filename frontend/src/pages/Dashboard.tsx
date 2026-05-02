@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [filterMode, setFilterMode] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUrgentPanel, setShowUrgentPanel] = useState(false);
-  const [urgentPanelFilter, setUrgentPanelFilter] = useState<'all' | 'labs' | 'meds' | 'new' | 'critical'>('all');
+  const [urgentPanelFilter, setUrgentPanelFilter] = useState<'all' | 'labs' | 'meds' | 'new' | 'critical' | 'orders'>('all');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -29,6 +29,11 @@ export default function Dashboard() {
       // Attempt to get records for med tracking, but don't fail if it's missing
       try {
         const recordsRes = await apiWithCache.get('/all-records');
+        console.log('Dashboard: Fetched all-records:', recordsRes.data.length, 'records');
+        if (recordsRes.data.length > 0) {
+          console.log('Sample record module:', recordsRes.data[0].module);
+          console.log('Pending orders count test:', recordsRes.data.filter((r: any) => (r.module === 'so' || r.module === 'orders') && (r.orderStatus || 'Pending') === 'Pending').length);
+        }
         setAllRecords(recordsRes.data);
       } catch (recErr) {
         console.warn('Medication tracking data unavailable yet:', recErr);
@@ -38,10 +43,18 @@ export default function Dashboard() {
       console.error('Failed to fetch patients:', err);
     } finally {
       setLoading(false);
+      // Diagnostic log to see if counts match during render cycle
+      const currentPendingLabs = patients.filter(p => {
+        const labs = allRecords.filter(r => String(r.patientId) === String(p.id) && (String(r.module || '').toLowerCase().includes('lab') || (!r.module && r.status)));
+        return labs.some(l => String(l.status || 'pending').toLowerCase() === 'pending');
+      }).length;
+      console.log('Dashboard: Fetch complete. Detected pending labs:', currentPendingLabs);
     }
   };
 
   useEffect(() => {
+    clearCache('/patients');
+    clearCache('/all-records');
     fetchPatients();
   }, []);
 
@@ -101,7 +114,18 @@ export default function Dashboard() {
   const nurseName = (storedName && !storedName.includes('@')) ? storedName : 'Nurse';
   const obCount = patients.filter(p => getPatientType(p) === 'OB').length;
   const gyneCount = patients.filter(p => getPatientType(p) === 'Gyne').length;
-  const pendingLabsOrProcedures = patients.filter(p => normalizeStatus(p.status) === 'for billing').length;
+  const getPendingLabs = (patientId: string) => {
+    return allRecords.filter(r => {
+      const isPatientMatch = String(r.patientId || '').trim() === String(patientId || '').trim();
+      const isLab = (r.key && String(r.key).toLowerCase().startsWith('labs_')) || 
+                    (String(r.module || '').toLowerCase().includes('lab')) ||
+                    (!r.module && r.status);
+      const isPending = String(r.status || 'pending').trim().toLowerCase() === 'pending';
+      return isPatientMatch && isLab && isPending;
+    });
+  };
+  const patientsWithPendingLabs = patients.filter(p => getPendingLabs(p.id).length > 0);
+  const pendingLabsOrProcedures = patientsWithPendingLabs.length;
 
   const getShiftPendingMeds = (patientId: string) => {
     const shift = getCurrentShift();
@@ -117,6 +141,17 @@ export default function Dashboard() {
 
   const patientsWithPendingMeds = patients.filter(p => getShiftPendingMeds(p.id).length > 0);
   const pendingMeds = patientsWithPendingMeds.length;
+
+  const getPendingOrders = (patientId: string) => {
+    return allRecords.filter(r => {
+      const isPatientMatch = String(r.patientId) === String(patientId);
+      const isOrderModule = r.module === 'so' || r.module === 'orders' || (!r.module && (r.orderType || r.orderStatus));
+      const isPending = String(r.orderStatus || 'Pending').toLowerCase() === 'pending';
+      return isPatientMatch && isOrderModule && isPending;
+    });
+  };
+  const patientsWithPendingOrders = patients.filter(p => getPendingOrders(p.id).length > 0);
+  const pendingOrders = patientsWithPendingOrders.length;
   const urgentNotifications = patients.flatMap(p => {
     const notifications = [];
     const status = normalizeStatus(p.status);
@@ -125,13 +160,19 @@ export default function Dashboard() {
     if (status === 'for discharge') {
       notifications.push({ id: `${p.id}-critical`, patient: p, type: 'critical', msg: p.diag || 'Critical Status', icon: '🔴', target: `/patient/${p.id}` });
     }
-    if (status === 'for billing') {
-      const pendingLab = (p.importantOrders || []).find((o: any) => o.orderStatus !== 'Completed')?.description;
-      notifications.push({ id: `${p.id}-labs`, patient: p, type: 'labs', msg: pendingLab ? `Pending: ${pendingLab}` : 'Pending labs/procedures', icon: '🧪', target: `/patient/${p.id}/labs` });
+    const pendingLabsList = getPendingLabs(p.id);
+    if (pendingLabsList.length > 0) {
+      notifications.push({ id: `${p.id}-labs`, patient: p, type: 'labs', msg: `Pending: ${pendingLabsList.map(l => l.name || 'Lab Test').join(', ')}`, icon: '🧪', target: `/patient/${p.id}/labs` });
+    } else if (status === 'for billing') {
+      notifications.push({ id: `${p.id}-labs-status`, patient: p, type: 'labs', msg: 'Pending labs/procedures', icon: '🧪', target: `/patient/${p.id}/labs` });
     }
     const shiftMeds = getShiftPendingMeds(p.id);
     if (shiftMeds.length > 0) {
       notifications.push({ id: `${p.id}-meds`, patient: p, type: 'meds', msg: `Due: ${shiftMeds.map(m => m.name).join(', ')}`, icon: '💊', target: `/patient/${p.id}/meds` });
+    }
+    const pendingOrdersList = getPendingOrders(p.id);
+    if (pendingOrdersList.length > 0) {
+      notifications.push({ id: `${p.id}-orders`, patient: p, type: 'orders', msg: `Pending: ${pendingOrdersList.map(o => o.orderType || 'Order').join(', ')}`, icon: '📋', target: `/patient/${p.id}/so` });
     }
     // If patient was added in the last 12 hours
     const patientTs = Number(p.id);
@@ -217,7 +258,7 @@ export default function Dashboard() {
               <span className="info-val">{newEndorsementsCount}</span>
             </div>
             <div className="info-row" onClick={() => { setUrgentPanelFilter('labs'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer' }}>
-              <span className="info-key">Pending acknowledgments</span>
+              <span className="info-key">Pending labs/procedures</span>
               <span className="info-val">{pendingLabsOrProcedures}</span>
             </div>
             <div className="info-row" onClick={() => { setUrgentPanelFilter('critical'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer', border: criticalAlertsCount > 0 ? '1px solid var(--danger)' : 'none', borderRadius: '8px', padding: '4px 8px' }}>
@@ -239,6 +280,7 @@ export default function Dashboard() {
                   <span className="pulse-icon">🔔</span> {urgentPanelFilter === 'all' ? 'Urgent Tasks & Notifications' : 
                                                           urgentPanelFilter === 'labs' ? 'Pending Labs/Procedures' :
                                                           urgentPanelFilter === 'meds' ? 'Pending Medications' :
+                                                          urgentPanelFilter === 'orders' ? 'Pending Standing Orders' :
                                                           urgentPanelFilter === 'new' ? 'New Endorsements' : 'Urgent Alerts'}
                 </div>
                 
@@ -288,6 +330,10 @@ export default function Dashboard() {
             <div className="info-row" onClick={() => { setUrgentPanelFilter('meds'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer' }}>
               <span className="info-key">Pending meds</span>
               <span className="info-val">{pendingMeds}</span>
+            </div>
+            <div className="info-row" onClick={() => { setUrgentPanelFilter('orders'); setShowUrgentPanel(true); }} style={{ cursor: 'pointer' }}>
+              <span className="info-key">Pending orders</span>
+              <span className="info-val">{pendingOrders}</span>
             </div>
           </div>
 

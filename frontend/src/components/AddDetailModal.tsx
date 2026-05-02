@@ -28,6 +28,7 @@ export default function AddDetailModal({ type, patientId, record, onClose, onSav
         showToast('Record saved successfully');
       }
       clearCache(`/records/${type}_${patientId}`);
+      clearCache('/all-records');
       onSave();
     } catch (err: any) {
       console.error('Save error:', err);

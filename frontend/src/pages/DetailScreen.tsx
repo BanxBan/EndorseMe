@@ -112,6 +112,7 @@ export default function DetailScreen() {
     const meta = detailMeta[type as string];
     await api.delete(`/records/${meta.key}_${id}/${recordId}`);
     clearCache(`/records/${meta.key}_${id}`);
+    clearCache('/all-records');
     showToast('Record removed successfully');
     fetchRecords();
   };

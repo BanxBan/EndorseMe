@@ -66,7 +66,13 @@ router.delete('/records/:key/:id', async (req, res) => {
 router.get('/all-records', async (req, res) => {
   const { data, error } = await supabase.from('records').select('*');
   if (error) return res.status(500).json({ error: error.message });
-  res.json((data || []).map(d => ({ ...(d.data || {}), id: d.id, patientId: d.key?.split('_').pop() })));
+  res.json((data || []).map(d => {
+    const keyParts = d.key?.split('_') || [];
+    const patientId = keyParts.pop();
+    const module = keyParts.join('_');
+    console.log(`Backend: Parsed record key "${d.key}" -> module: "${module}", patientId: "${patientId}"`);
+    return { ...(d.data || {}), id: d.id, patientId, module, key: d.key };
+  }));
 });
 
 export default router;
