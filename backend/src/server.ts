@@ -19,8 +19,17 @@ app.use('/', authRoutes);
 app.use('/', apiRoutes);
 
 // Version check to verify deployment
-app.get('/api/version', (req, res) => {
-  res.json({ version: '1.1.1', status: 'ready', timestamp: new Date().toISOString() });
+app.get(['/api/version', '/version'], (req, res) => {
+  res.json({ 
+    version: '1.1.2', 
+    status: 'ready', 
+    timestamp: new Date().toISOString(),
+    env: {
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_KEY,
+      nodeEnv: process.env.NODE_ENV
+    }
+  });
 });
 
 // Debug: request logger
