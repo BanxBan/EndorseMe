@@ -15,6 +15,7 @@ export default function Login() {
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.username);
       localStorage.setItem('nurseName', res.data.name || 'Nurse');
+      localStorage.setItem('licenseNo', res.data.licenseNo || '');
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');

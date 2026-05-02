@@ -29,7 +29,7 @@ export default function NurseProfile() {
     return {
       name: (n && !n.includes('@')) ? n : 'Nurse',
       email: storedUsername || parsed?.username || 'Not available',
-      nurseId: parsed?.id || 'Not available',
+      licenseNo: localStorage.getItem('licenseNo') || 'Not available',
       role: 'Nurse',
     };
   }, [storedUsername, token]);
@@ -59,8 +59,8 @@ export default function NurseProfile() {
             <span className="info-val">{profile.email}</span>
           </div>
           <div className="info-row">
-            <span className="info-key">Nurse ID</span>
-            <span className="info-val">{profile.nurseId}</span>
+            <span className="info-key">License Number</span>
+            <span className="info-val">{profile.licenseNo}</span>
           </div>
         </div>
       </div>

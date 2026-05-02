@@ -102,7 +102,12 @@ app.post('/auth/login', async (req, res) => {
     }
 
     const token = jwt.sign({ username: data.username, id: data.id }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ token, username: data.username });
+    res.json({ 
+      token, 
+      username: data.username,
+      name: data.name,
+      licenseNo: data.license_no
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });

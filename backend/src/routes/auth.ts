@@ -62,7 +62,12 @@ router.post('/login', async (req, res) => {
   }
 
   const token = jwt.sign({ username: data.username, id: data.id }, JWT_SECRET, { expiresIn: '24h' });
-  res.json({ token, username: data.username, name: data.name });
+  res.json({ 
+    token, 
+    username: data.username, 
+    name: data.name,
+    licenseNo: data.license_no 
+  });
 });
 
 export default router;
