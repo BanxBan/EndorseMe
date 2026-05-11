@@ -10,7 +10,7 @@ export default function PatientProfile() {
     const normalized = String(status || '').toLowerCase().trim();
     if (normalized === 'stable') return 'admitted';
     if (normalized === 'fair') return 'for billing';
-    if (normalized === 'critical') return 'for discharge';
+    if (normalized === 'critical') return 'admitted';
     return normalized || 'admitted';
   };
 

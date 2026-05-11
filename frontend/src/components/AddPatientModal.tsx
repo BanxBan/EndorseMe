@@ -462,7 +462,6 @@ export default function AddPatientModal({ patient, onClose, onSave }: { patient?
               <select name="status" value={formData.status} onChange={handleChange} style={{ fontSize: '0.9rem', padding: '10px' }}>
                 <option value="admitted">Admitted</option>
                 <option value="for billing">For Billing</option>
-                <option value="for discharge">For Discharge</option>
               </select>
             </div>
           </div>

@@ -74,7 +74,7 @@ export default function Dashboard() {
     const normalized = String(status || '').toLowerCase().trim();
     if (normalized === 'stable') return 'admitted';
     if (normalized === 'fair') return 'for billing';
-    if (normalized === 'critical') return 'for discharge';
+    if (normalized === 'critical') return 'admitted';
     if (normalized === 'discharged') return 'discharged';
     return normalized || 'admitted';
   };
@@ -103,7 +103,6 @@ export default function Dashboard() {
     const normalizedStatus = normalizeStatus(p.status);
     if (filterMode === 'ADMITTED') return normalizedStatus === 'admitted';
     if (filterMode === 'FOR_BILLING') return normalizedStatus === 'for billing';
-    if (filterMode === 'FOR_DISCHARGE') return normalizedStatus === 'for discharge';
     if (filterMode === 'OB') return getPatientType(p) === 'OB';
     if (filterMode === 'GYNE') return getPatientType(p) === 'Gyne';
     if (filterMode === 'PENDING_MEDS') return normalizeStatus(p.status) !== 'admitted';
@@ -365,7 +364,6 @@ export default function Dashboard() {
             <button className={`shift-btn ${filterMode === 'ALL' ? 'active' : ''}`} onClick={() => setFilterMode('ALL')}>All</button>
             <button className={`shift-btn ${filterMode === 'ADMITTED' ? 'active' : ''}`} onClick={() => setFilterMode('ADMITTED')}>Admitted</button>
             <button className={`shift-btn ${filterMode === 'FOR_BILLING' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_BILLING')}>For Billing</button>
-            <button className={`shift-btn ${filterMode === 'FOR_DISCHARGE' ? 'active' : ''}`} onClick={() => setFilterMode('FOR_DISCHARGE')}>For Discharge</button>
             <button className={`shift-btn ${filterMode === 'OB' ? 'active' : ''}`} onClick={() => setFilterMode('OB')}>OB</button>
             <button className={`shift-btn ${filterMode === 'GYNE' ? 'active' : ''}`} onClick={() => setFilterMode('GYNE')}>Gyne</button>
           </div>
