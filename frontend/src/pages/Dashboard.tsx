@@ -379,7 +379,7 @@ export default function Dashboard() {
             <div className="patient-grid">
               {filteredPatients.map(p => (
                 <div key={p.id} className={`patient-card status-${normalizeStatus(p.status).replace(/\s+/g, '-')}`} onClick={() => navigate(`/patient/${p.id}`)} style={{ cursor: 'pointer' }}>
-                  <div className="patient-room">{p.ward_name ? `${p.ward_name} – Bed ${p.bed_number}` : `Rm ${p.room}`} · {String(p.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne'}</div>
+                  <div className="patient-room">{p.ward_name ? `${p.ward_name} – Bed ${p.bed_number}` : `Rm ${p.room}`} · {getPatientType(p)}</div>
                   <div className="patient-name">{p.fname} {p.lname}, {p.age} y/o</div>
                   <div className="patient-diag">{p.diag}</div>
                   <span className={`patient-type-badge ${getPatientTypeBadgeClass(getPatientType(p))}`}>{getPatientType(p)}</span>

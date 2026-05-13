@@ -19,13 +19,13 @@ export default function PatientProfile() {
   const [patient, setPatient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
-  const patientCategory = String(patient?.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne';
   const patientType = (() => {
     const type = String(patient?.patientType || '').trim();
     if (type === 'CS' || type === 'Post CS' || type === 'NSVD' || type === 'OB') return 'OB';
     if (type === 'Gyne') return 'Gyne';
-    return patientCategory === 'OB' ? 'OB' : 'Gyne';
+    return String(patient?.ward_type || '').toLowerCase().includes('ob') ? 'OB' : 'Gyne';
   })();
+  const patientCategory = patientType;
   const patientTypeBadgeClass = patientType === 'OB' ? 'patient-type-ob' : 'patient-type-gyne';
   const vitalsSchedule = patient?.vitalsSchedule || 'Q4';
   const ioSchedule = patient?.ioSchedule || 'QShift';
@@ -152,7 +152,9 @@ export default function PatientProfile() {
           </div>
           <div className="info-row"><span className="info-key">Room Number</span><span className="info-val">{patient.ward_name ? `${patient.ward_name} – Bed ${patient.bed_number}` : patient.room}</span></div>
           <div className="info-row"><span className="info-key">Patient Category</span><span className="info-val">{patientCategory}</span></div>
-          <div className="info-row"><span className="info-key">Patient Type</span><span className="info-val"><span className={`patient-type-badge ${patientTypeBadgeClass}`}>{patientType}</span></span></div>
+          {patient?.patientType && ['CS', 'NSVD', 'Post CS'].includes(patient.patientType) && (
+            <div className="info-row"><span className="info-key">Patient Type</span><span className="info-val"><span className={`patient-type-badge ${patientTypeBadgeClass}`}>{patient.patientType}</span></span></div>
+          )}
           <div className="info-row"><span className="info-key">Patient Status</span><span className="info-val">{normalizeStatus(patient.status)}</span></div>
           <div className="info-row"><span className="info-key">Vital Signs Schedule</span><span className="info-val"><span className="schedule-badge">VS {vitalsSchedule}</span></span></div>
           <div className="info-row"><span className="info-key">I&O Schedule</span><span className="info-val"><span className="schedule-badge">I&O {ioSchedule}</span></span></div>
